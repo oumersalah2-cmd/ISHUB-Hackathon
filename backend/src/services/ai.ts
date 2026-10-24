@@ -124,43 +124,146 @@ export async function investigateTicket(
     };
   }
 
-  // 2. Strict API Key Validation (No silent fallback to fake proposals)
-  const apiKey = env?.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey.trim() === '' || apiKey === 'your_gemini_api_key_here' || apiKey === 'your-key-here') {
-    return {
-      type: 'error',
-      message: 'The AI model service is currently unconfigured. Please provide a valid GEMINI_API_KEY in the environment and retry.',
-      ticket_id,
-      tool_logs: toolLogs
-    };
-  }
+  // 2. Provider Configuration & API Key Validation (No silent fallback or provider switching)
+  const provider = (env?.AI_PROVIDER || process.env.AI_PROVIDER || 'gemini').toLowerCase();
 
-  const modelName = env?.MODEL_NAME || process.env.MODEL_NAME || 'gemini-2.5-flash';
-
-  // 3. Live Model Execution
-  try {
-    return await runGeminiAgent(options, db, apiKey, modelName, toolLogs);
-  } catch (err: any) {
-    const errStr = (err?.message || '').toLowerCase();
-    let userMessage = 'The AI service is temporarily unavailable. Your input has been preserved. Please retry.';
-
-    if (err?.status === 403 || errStr.includes('403') || errStr.includes('denied') || errStr.includes('access denied')) {
-      userMessage = 'The AI model service rejected access. Please verify your API key permissions and retry.';
-    } else if (err?.status === 429 || errStr.includes('429') || errStr.includes('quota') || errStr.includes('rate limit')) {
-      userMessage = 'The AI model service rate limit has been exceeded. Please wait a moment and retry.';
-    } else if (err?.status === 404 || errStr.includes('404') || errStr.includes('not found')) {
-      userMessage = 'The configured AI model is not available. Please verify the model name configuration and retry.';
-    } else if (err?.name === 'AbortError' || errStr.includes('timeout') || errStr.includes('connecttimeout') || errStr.includes('fetch failed')) {
-      userMessage = 'Connection to the AI service timed out. Please check your network connection and retry.';
+  if (provider === 'groq') {
+    const groqKey = env?.GROQ_API_KEY || process.env.GROQ_API_KEY;
+    if (!groqKey || groqKey.trim() === '' || groqKey.includes('your_') || groqKey.includes('your-')) {
+      return {
+        type: 'error',
+        message: 'The AI model service is configured for Groq, but GROQ_API_KEY is missing or invalid in the environment.',
+        ticket_id,
+        tool_logs: toolLogs
+      };
     }
-
+    const modelName = env?.MODEL_NAME || process.env.MODEL_NAME || 'llama-3.3-70b-versatile';
+    try {
+      return await runGroqAgent(options, db, groqKey, modelName, toolLogs);
+    } catch (err: any) {
+      return handleAgentException(err, ticket_id, toolLogs, 'Groq');
+    }
+  } else if (provider === 'gemini') {
+    const apiKey = env?.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey.trim() === '' || apiKey === 'your_gemini_api_key_here' || apiKey === 'your-key-here') {
+      return {
+        type: 'error',
+        message: 'The AI model service is currently unconfigured. Please provide a valid GEMINI_API_KEY in the environment and retry.',
+        ticket_id,
+        tool_logs: toolLogs
+      };
+    }
+    const modelName = env?.MODEL_NAME || process.env.MODEL_NAME || 'gemini-2.5-flash';
+    try {
+      return await runGeminiAgent(options, db, apiKey, modelName, toolLogs);
+    } catch (err: any) {
+      return handleAgentException(err, ticket_id, toolLogs, 'Gemini');
+    }
+  } else {
     return {
       type: 'error',
-      message: userMessage,
+      message: `Unknown AI_PROVIDER '${provider}'. Supported providers are 'gemini' and 'groq'.`,
       ticket_id,
       tool_logs: toolLogs
     };
   }
+}
+
+function handleAgentException(err: any, ticket_id: string, toolLogs: ToolCallLog[], providerName: string): AgentResponse & { tool_logs: ToolCallLog[] } {
+  const errStr = (err?.message || '').toLowerCase();
+  let userMessage = `The ${providerName} AI service is temporarily unavailable. Your input has been preserved. Please retry.`;
+
+  if (err?.status === 401 || errStr.includes('401') || errStr.includes('api key not valid')) {
+    userMessage = `The ${providerName} API key is invalid (HTTP 401). Please verify your API key in the environment and retry.`;
+  } else if (err?.status === 403 || errStr.includes('403') || errStr.includes('denied') || errStr.includes('access denied')) {
+    userMessage = `The ${providerName} service rejected access (HTTP 403). Please verify your project permissions and retry.`;
+  } else if (err?.status === 429 || errStr.includes('429') || errStr.includes('quota') || errStr.includes('rate limit')) {
+    userMessage = `The ${providerName} service rate limit or quota has been exceeded (HTTP 429). Please wait a moment and retry.`;
+  } else if (err?.status === 404 || errStr.includes('404') || errStr.includes('not found')) {
+    userMessage = `The configured model name was not found by ${providerName} (HTTP 404). Please verify MODEL_NAME in configuration and retry.`;
+  } else if (err?.name === 'AbortError' || errStr.includes('timeout') || errStr.includes('connecttimeout') || errStr.includes('fetch failed')) {
+    userMessage = `Connection to ${providerName} timed out or failed. Please check your network connection and retry.`;
+  }
+
+  return {
+    type: 'error',
+    message: userMessage,
+    ticket_id,
+    tool_logs: toolLogs
+  };
+}
+
+export function parseModelJson(rawText: string): any {
+  if (!rawText) return null;
+  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return null;
+  try {
+    return JSON.parse(jsonMatch[0]);
+  } catch {
+    return null;
+  }
+}
+
+export function validateProposal(
+  parsed: any,
+  allowedPolicyIds: string[]
+): { valid: boolean; error?: string } {
+  const allowedCategories = ['Refund', 'Delivery', 'Account', 'Other'];
+  const allowedStatuses = ['Open', 'In Progress', 'Pending Customer', 'Resolved', 'Escalated'];
+
+  if (!parsed.category || !allowedCategories.includes(parsed.category)) {
+    return {
+      valid: false,
+      error: `Category '${parsed.category}' is invalid. Allowed categories: ${allowedCategories.join(', ')}`
+    };
+  }
+
+  if (!parsed.next_status || !allowedStatuses.includes(parsed.next_status)) {
+    return {
+      valid: false,
+      error: `Status '${parsed.next_status}' is invalid. Allowed statuses: ${allowedStatuses.join(', ')}`
+    };
+  }
+
+  if (!parsed.response_draft || typeof parsed.response_draft !== 'string' || parsed.response_draft.trim().length === 0) {
+    return {
+      valid: false,
+      error: 'response_draft must be a non-empty string.'
+    };
+  }
+
+  const policyIds = Array.isArray(parsed.policy_ids) ? parsed.policy_ids : [];
+  for (const pid of policyIds) {
+    if (!allowedPolicyIds.includes(pid)) {
+      return {
+        valid: false,
+        error: `Policy ID '${pid}' was not retrieved by search_policies.`
+      };
+    }
+  }
+
+  // Grounding check for ungrounded promises/terms
+  const draftLower = parsed.response_draft.toLowerCase();
+  if (/\botp\b/i.test(draftLower) || /one-time password/i.test(draftLower)) {
+    return {
+      valid: false,
+      error: 'Grounding check failed: draft contains forbidden ungrounded term OTP / one-time password.'
+    };
+  }
+  if (/prepaid (?:return )?(?:shipping )?label/i.test(draftLower)) {
+    return {
+      valid: false,
+      error: 'Grounding check failed: draft contains forbidden ungrounded term prepaid label.'
+    };
+  }
+  if (/\bstore credit\b/i.test(draftLower)) {
+    return {
+      valid: false,
+      error: 'Grounding check failed: draft contains ungrounded promise of store credit.'
+    };
+  }
+
+  return { valid: true };
 }
 
 // Live Gemini Function Calling Loop (max 5 tool calls, max 6 turns, JSON retry once)
@@ -177,6 +280,7 @@ export async function runGeminiAgent(
   let hasReadTicket = false;
   let hasSearchedPolicies = false;
   let allowedPolicyIds: string[] = [];
+  const calledToolsHistory = new Set<string>();
 
   const functionDeclarations = [
     {
@@ -255,45 +359,52 @@ export async function runGeminiAgent(
 
     const call = functionCalls[0];
     let toolResult: any;
+    const callSignature = `${call.name}:${JSON.stringify(call.args)}`;
 
-    if (call.name === 'read_ticket') {
-      const args = call.args as { ticket_id: string };
-      toolResult = await readTicket(args, db);
-      if (toolResult.success) hasReadTicket = true;
-      toolCallsCount++;
-      toolLogs.push({
-        tool: 'read_ticket',
-        input: args,
-        output: toolResult,
-        timestamp: new Date().toISOString()
-      });
-    } else if (call.name === 'search_policies') {
-      const args = call.args as { query?: string; category?: any };
-      toolResult = await searchPolicies(args, db);
-      if (toolResult.success) {
-        hasSearchedPolicies = true;
-        allowedPolicyIds = (toolResult.policies || []).map((p: any) => p.policy_id || p.policy_code || p.id);
-      }
-      toolCallsCount++;
-      toolLogs.push({
-        tool: 'search_policies',
-        input: args,
-        output: toolResult,
-        timestamp: new Date().toISOString()
-      });
-    } else if (call.name === 'update_ticket') {
-      const args = call.args as any;
-      const sessionPrereqs = { hasReadTicket, hasSearchedPolicies, allowedPolicyIds };
-      toolResult = await updateTicket(args, db, sessionPrereqs);
-      toolCallsCount++;
-      toolLogs.push({
-        tool: 'update_ticket',
-        input: args,
-        output: toolResult,
-        timestamp: new Date().toISOString()
-      });
+    if (calledToolsHistory.has(callSignature)) {
+      toolResult = { error: `Repeated identical tool call '${call.name}' is rejected. Please examine earlier results.` };
     } else {
-      toolResult = { error: `Tool ${call.name} is not permitted.` };
+      calledToolsHistory.add(callSignature);
+
+      if (call.name === 'read_ticket') {
+        const args = call.args as { ticket_id: string };
+        toolResult = await readTicket(args, db);
+        if (toolResult.success) hasReadTicket = true;
+        toolCallsCount++;
+        toolLogs.push({
+          tool: 'read_ticket',
+          input: args,
+          output: toolResult,
+          timestamp: new Date().toISOString()
+        });
+      } else if (call.name === 'search_policies') {
+        const args = call.args as { query?: string; category?: any };
+        toolResult = await searchPolicies(args, db);
+        if (toolResult.success) {
+          hasSearchedPolicies = true;
+          allowedPolicyIds = (toolResult.policies || []).map((p: any) => p.policy_id || p.policy_code || p.id);
+        }
+        toolCallsCount++;
+        toolLogs.push({
+          tool: 'search_policies',
+          input: args,
+          output: toolResult,
+          timestamp: new Date().toISOString()
+        });
+      } else if (call.name === 'update_ticket') {
+        const args = call.args as any;
+        const sessionPrereqs = { hasReadTicket, hasSearchedPolicies, allowedPolicyIds };
+        toolResult = await updateTicket(args, db, sessionPrereqs);
+        toolCallsCount++;
+        toolLogs.push({
+          tool: 'update_ticket',
+          input: args,
+          output: toolResult,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        toolResult = { error: `Tool ${call.name} is not permitted.` };
+      }
     }
 
     response = await chat.sendMessage([
@@ -304,18 +415,6 @@ export async function runGeminiAgent(
         }
       }
     ]);
-  }
-
-  // Parse model response and handle JSON re-ask once if invalid
-  function parseModelJson(rawText: string): any {
-    if (!rawText) return null;
-    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-    try {
-      return JSON.parse(jsonMatch[0]);
-    } catch {
-      return null;
-    }
   }
 
   function extractText(resp: any): string {
@@ -331,7 +430,7 @@ export async function runGeminiAgent(
   let text = extractText(response);
   let parsed = parseModelJson(text);
 
-  // If invalid JSON from the model, re-ask once
+  // If invalid JSON or proposal from the model, re-ask once
   if (!parsed || (!parsed.type && !parsed.response_draft && !parsed.question)) {
     try {
       const retryResponse = await chat.sendMessage(
@@ -340,7 +439,40 @@ export async function runGeminiAgent(
       text = extractText(retryResponse);
       parsed = parseModelJson(text);
     } catch {
-      // Re-ask error caught by outer handler
+      // Re-ask error handled below
+    }
+  }
+
+  // Validate proposal grounding and schema
+  if (parsed?.type === 'proposal') {
+    const val = validateProposal(parsed, allowedPolicyIds);
+    if (!val.valid) {
+      try {
+        const fixPrompt = `Your proposal failed validation: ${val.error}. Please correct the proposal and reply with a valid JSON proposal matching the schema.`;
+        const retryResponse = await chat.sendMessage(fixPrompt);
+        text = extractText(retryResponse);
+        const retryParsed = parseModelJson(text);
+        if (retryParsed?.type === 'proposal') {
+          const secondVal = validateProposal(retryParsed, allowedPolicyIds);
+          if (secondVal.valid) {
+            parsed = retryParsed;
+          } else {
+            return {
+              type: 'error',
+              message: `Proposal failed grounding check: ${secondVal.error}`,
+              ticket_id,
+              tool_logs: toolLogs
+            };
+          }
+        }
+      } catch {
+        return {
+          type: 'error',
+          message: `Proposal failed validation: ${val.error}`,
+          ticket_id,
+          tool_logs: toolLogs
+        };
+      }
     }
   }
 
@@ -355,6 +487,199 @@ export async function runGeminiAgent(
   return {
     type: 'error',
     message: 'The AI model produced an invalid response format. Your input was preserved. Please retry.',
+    ticket_id,
+    tool_logs: toolLogs
+  };
+}
+
+// Live Groq Function Calling Loop (OpenAI-compatible)
+export async function runGroqAgent(
+  options: InvestigateOptions,
+  db: IDatabaseService,
+  apiKey: string,
+  modelName: string,
+  toolLogs: ToolCallLog[]
+): Promise<AgentResponse & { tool_logs: ToolCallLog[] }> {
+  const { ticket_id, clarification_answer } = options;
+  let hasReadTicket = false;
+  let hasSearchedPolicies = false;
+  let allowedPolicyIds: string[] = [];
+  const calledToolsHistory = new Set<string>();
+
+  const tools = [
+    {
+      type: 'function',
+      function: {
+        name: 'read_ticket',
+        description: 'Retrieve an existing customer ticket from the database and computed values days_since_purchase and business_days_since_shipping',
+        parameters: {
+          type: 'object',
+          properties: {
+            ticket_id: { type: 'string', description: 'The unique ticket identifier, e.g. T-001' }
+          },
+          required: ['ticket_id']
+        }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'search_policies',
+        description: 'Search company policies in the database for relevant rules, terms and conditions. Returns passages as {policy_id, title, text}.',
+        parameters: {
+          type: 'object',
+          properties: {
+            query: { type: 'string', description: 'Search keywords, e.g. refund, return, delivery, account' },
+            category: { type: 'string', description: 'Policy category: Refund, Delivery, Account, Other' }
+          }
+        }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'update_ticket',
+        description: 'Register proposed category, status, response draft, and policy IDs. Returns PENDING_APPROVAL.',
+        parameters: {
+          type: 'object',
+          properties: {
+            ticket_id: { type: 'string', description: 'Ticket ID' },
+            category: { type: 'string', description: 'Refund, Delivery, Account, Other' },
+            status: { type: 'string', description: 'Open, In Progress, Pending Customer, Resolved, Escalated' },
+            response_draft: { type: 'string', description: 'Polite customer response containing ONLY facts from ticket and policy. No OTP or prepaid label wording.' },
+            policy_ids: { type: 'array', items: { type: 'string' }, description: 'Policy IDs retrieved from search_policies' }
+          },
+          required: ['ticket_id', 'category', 'status', 'response_draft', 'policy_ids']
+        }
+      }
+    }
+  ];
+
+  let userPrompt = `Investigate customer support ticket ID: "${ticket_id}".`;
+  if (clarification_answer) {
+    userPrompt += ` Officer clarification response: "${clarification_answer}".`;
+  }
+
+  const messages: any[] = [
+    { role: 'system', content: SYSTEM_INSTRUCTION },
+    { role: 'user', content: userPrompt }
+  ];
+
+  let turn = 0;
+  const MAX_TURNS = 6;
+  let toolCallsCount = 0;
+  const MAX_TOOL_CALLS = 5;
+
+  while (turn < MAX_TURNS) {
+    turn++;
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages,
+        tools,
+        tool_choice: 'auto',
+        temperature: 0.1
+      })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      let msg = 'The Groq AI service returned an error. Please retry.';
+      if (res.status === 401) msg = 'Groq API key is invalid (HTTP 401). Please check your credentials.';
+      else if (res.status === 429) msg = 'Groq rate limit exceeded (HTTP 429). Please wait a moment and retry.';
+      return { type: 'error', message: msg, ticket_id, tool_logs: toolLogs };
+    }
+
+    const data: any = await res.json();
+    const assistantMessage = data.choices?.[0]?.message;
+    if (!assistantMessage) break;
+
+    messages.push(assistantMessage);
+
+    if (!assistantMessage.tool_calls || assistantMessage.tool_calls.length === 0) {
+      break;
+    }
+
+    for (const toolCall of assistantMessage.tool_calls) {
+      if (toolCallsCount >= MAX_TOOL_CALLS) {
+        return {
+          type: 'error',
+          message: 'The AI model exceeded the maximum allowed tool call limit (5). Please retry.',
+          ticket_id,
+          tool_logs: toolLogs
+        };
+      }
+
+      const fnName = toolCall.function.name;
+      let args: any = {};
+      try { args = JSON.parse(toolCall.function.arguments || '{}'); } catch {}
+
+      const callSig = `${fnName}:${JSON.stringify(args)}`;
+      let toolResult: any;
+
+      if (calledToolsHistory.has(callSig)) {
+        toolResult = { error: `Repeated identical tool call '${fnName}' is rejected. Please examine earlier results.` };
+      } else {
+        calledToolsHistory.add(callSig);
+        if (fnName === 'read_ticket') {
+          toolResult = await readTicket(args, db);
+          if (toolResult.success) hasReadTicket = true;
+          toolCallsCount++;
+          toolLogs.push({ tool: 'read_ticket', input: args, output: toolResult, timestamp: new Date().toISOString() });
+        } else if (fnName === 'search_policies') {
+          toolResult = await searchPolicies(args, db);
+          if (toolResult.success) {
+            hasSearchedPolicies = true;
+            allowedPolicyIds = (toolResult.policies || []).map((p: any) => p.policy_id || p.policy_code || p.id);
+          }
+          toolCallsCount++;
+          toolLogs.push({ tool: 'search_policies', input: args, output: toolResult, timestamp: new Date().toISOString() });
+        } else if (fnName === 'update_ticket') {
+          const sessionPrereqs = { hasReadTicket, hasSearchedPolicies, allowedPolicyIds };
+          toolResult = await updateTicket(args, db, sessionPrereqs);
+          toolCallsCount++;
+          toolLogs.push({ tool: 'update_ticket', input: args, output: toolResult, timestamp: new Date().toISOString() });
+        } else {
+          toolResult = { error: `Tool ${fnName} is not permitted.` };
+        }
+      }
+
+      messages.push({
+        role: 'tool',
+        tool_call_id: toolCall.id,
+        content: JSON.stringify(toolResult)
+      });
+    }
+  }
+
+  const lastMsg = messages[messages.length - 1];
+  const rawText = lastMsg?.content || '';
+  let parsed = parseModelJson(rawText);
+
+  if (parsed?.type === 'proposal') {
+    const val = validateProposal(parsed, allowedPolicyIds);
+    if (!val.valid) {
+      return {
+        type: 'error',
+        message: `Proposal failed policy grounding validation: ${val.error}`,
+        ticket_id,
+        tool_logs: toolLogs
+      };
+    }
+  }
+
+  if (parsed && (parsed.type === 'proposal' || parsed.type === 'clarification' || parsed.type === 'error')) {
+    return { ...parsed, ticket_id, tool_logs: toolLogs };
+  }
+
+  return {
+    type: 'error',
+    message: 'The Groq AI model produced an invalid response format. Your input was preserved. Please retry.',
     ticket_id,
     tool_logs: toolLogs
   };

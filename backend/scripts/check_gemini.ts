@@ -5,22 +5,22 @@ import dotenv from 'dotenv';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Load environment in priority order without logging contents
-const devVarsPath = path.resolve(__dirname, '../.dev.vars');
-const backendEnvPath = path.resolve(__dirname, '../.env');
-const rootEnvPath = path.resolve(__dirname, '../../.env');
-
-if (fs.existsSync(devVarsPath)) {
-  dotenv.config({ path: devVarsPath });
-}
-if (fs.existsSync(backendEnvPath)) {
-  dotenv.config({ path: backendEnvPath });
-}
-if (fs.existsSync(rootEnvPath)) {
-  dotenv.config({ path: rootEnvPath });
+// Deterministic loader: precedence = process.env, then backend/.dev.vars. Never read .env.
+let keySource = 'none';
+if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() !== '') {
+  keySource = 'process.env';
+} else {
+  const devVarsPath = path.resolve(__dirname, '../.dev.vars');
+  if (fs.existsSync(devVarsPath)) {
+    dotenv.config({ path: devVarsPath });
+    if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() !== '') {
+      keySource = 'backend/.dev.vars';
+    }
+  }
 }
 
 async function checkGemini() {
+  console.log(`Source: ${keySource}`);
   const modelName = process.env.MODEL_NAME || 'gemini-2.5-flash';
   const apiKey = process.env.GEMINI_API_KEY;
 
