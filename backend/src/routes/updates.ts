@@ -18,13 +18,19 @@ updatesRouter.get('/', async (c) => {
 
   const updates = rawUpdates.map(u => ({
     ...u,
+    ticketNumber: u.ticket_id,
+    responseDraft: u.response_draft,
+    approvedChanges: { category: u.approved_category, status: u.proposed_status },
+    policyIds: JSON.parse(u.evidence_policy_ids || '[]'),
     evidence_policy_ids: JSON.parse(u.evidence_policy_ids || '[]')
   }));
 
   return c.json({
     success: true,
     count: updates.length,
-    updates
+    updates,
+    outbox: updates,
+    data: updates
   });
 });
 
@@ -60,6 +66,8 @@ updatesRouter.get('/:id', async (c) => {
 
   return c.json({
     success: true,
-    update
+    update,
+    record: update,
+    data: update
   });
 });

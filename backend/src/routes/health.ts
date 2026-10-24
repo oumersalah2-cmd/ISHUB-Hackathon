@@ -11,6 +11,7 @@ healthRouter.get('/', async (c) => {
     const policyCount = await db.queryFirst<{ count: number }>('SELECT count(*) as count FROM policies');
 
     return c.json({
+      ok: true,
       status: 'healthy',
       timestamp: new Date().toISOString(),
       service: 'AI Customer Support Resolution Agent API',

@@ -172,7 +172,31 @@ export async function updateTicket(
     };
   }
 
-  // 7. Explicit Human Confirmation: commit transaction to database
+  // 7. Duplicate-Save Protection:
+  // Approving the same proposal twice must not create two records
+  const existingUpdate = await db.queryFirst<any>(
+    `SELECT id, created_at FROM ticket_updates 
+     WHERE ticket_id = ? AND proposed_status = ? AND approved_category = ? AND response_draft = ?
+     ORDER BY id DESC LIMIT 1`,
+    [ticket_id, status, category, response_draft]
+  );
+
+  if (existingUpdate) {
+    return {
+      success: true,
+      status: 'COMMITTED',
+      update_id: Number(existingUpdate.id),
+      ticket_id,
+      previous_status: existingTicket.status,
+      proposed_status: status,
+      approved_category: category,
+      response_draft,
+      evidence_policy_ids: policyIdsArray,
+      saved_at: existingUpdate.created_at
+    };
+  }
+
+  // 8. Explicit Human Confirmation: commit transaction to database
   const previous_status = existingTicket.status;
 
   await db.execute(

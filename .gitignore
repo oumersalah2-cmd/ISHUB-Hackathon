@@ -26,8 +26,9 @@ wrangler.env
 *.db
 *.db-wal
 *.db-shm
-data/
+/data/
 backend/data/
+ISHUB-Hackathon-backend/
 
 # Testing & Coverage
 coverage/

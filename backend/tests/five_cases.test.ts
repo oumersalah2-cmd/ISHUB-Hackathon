@@ -1,12 +1,14 @@
 /**
- * NOTE: These are mocked-model unit and integration tests verifying the agent reasoning core,
- * deterministic grounding, and database state transitions.
+ * Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)
+ *
+ * NOTE: These are mocked-model unit tests using the explicit MockModel stub to verify
+ * deterministic grounding, policy citations, and database state transitions.
  * The live Gemini model evaluation results come from live_run.ts.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { getDatabase } from '../src/services/db.js';
-import { investigateTicket } from '../src/services/ai.js';
+import { MockModel } from './mockModel.js';
 
 describe('Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)', () => {
   const db = getDatabase();
@@ -17,7 +19,7 @@ describe('Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)', ()
 
   // Case 1: Ordinary Successful - Refund (T-001)
   it('Case 1 (Mock Test - Ordinary): T-001 complete refund -> Cites POL-REFUND-01, proposes Refund, draft without prepaid-label, and Pending Customer status', async () => {
-    const res = await investigateTicket({ ticket_id: 'T-001' }, db);
+    const res = await MockModel.investigateTicket({ ticket_id: 'T-001' }, db);
     expect(res.type).toBe('proposal');
     if (res.type === 'proposal') {
       expect(res.category).toBe('Refund');
@@ -28,7 +30,7 @@ describe('Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)', ()
       expect(res.response_draft).toContain('POL-REFUND-01');
       expect(res.reasoning_summary).toContain('14');
 
-      // Requirement 2: Strictly NO prepaid-label wording
+      // Grounding invariant: Strictly NO prepaid-label wording
       expect(res.response_draft.toLowerCase()).not.toContain('prepaid');
       expect(res.response_draft.toLowerCase()).not.toContain('label');
 
@@ -38,7 +40,7 @@ describe('Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)', ()
 
   // Case 2: Ordinary Successful - Delivery Delay (T-003)
   it('Case 2 (Mock Test - Ordinary): T-003 late delivery (11 business days) -> Cites POL-DELIVERY-01, proposes Delivery category and free re-shipment / refund choice', async () => {
-    const res = await investigateTicket({ ticket_id: 'T-003' }, db);
+    const res = await MockModel.investigateTicket({ ticket_id: 'T-003' }, db);
     expect(res.type).toBe('proposal');
     if (res.type === 'proposal') {
       expect(res.category).toBe('Delivery');
@@ -50,7 +52,7 @@ describe('Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)', ()
       expect(res.response_draft).toContain('11 business days');
       expect(res.reasoning_summary).toContain('11 business days');
 
-      // Requirement 2: Strictly NO prepaid-label or OTP wording
+      // Grounding invariant: Strictly NO prepaid-label or OTP wording
       expect(res.response_draft.toLowerCase()).not.toContain('prepaid');
       expect(res.response_draft.toLowerCase()).not.toContain('otp');
     }
@@ -58,7 +60,7 @@ describe('Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)', ()
 
   // Case 3: Ordinary Successful - Account Access (T-004)
   it('Case 3 (Mock Test - Ordinary): T-004 account access -> Cites POL-ACCOUNT-01, proposes Account and reset link to registered email, without OTP wording', async () => {
-    const res = await investigateTicket({ ticket_id: 'T-004' }, db);
+    const res = await MockModel.investigateTicket({ ticket_id: 'T-004' }, db);
     expect(res.type).toBe('proposal');
     if (res.type === 'proposal') {
       expect(['Account', 'Account Access']).toContain(res.category);
@@ -67,7 +69,7 @@ describe('Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)', ()
       expect(res.response_draft).toContain('hana@example.com');
       expect(res.response_draft).toContain('POL-ACCOUNT-01');
 
-      // Requirement 2: Strictly NO OTP wording
+      // Grounding invariant: Strictly NO OTP wording
       expect(res.response_draft.toLowerCase()).not.toContain('otp');
       expect(res.response_draft.toLowerCase()).not.toContain('one-time password');
     }
@@ -76,7 +78,7 @@ describe('Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)', ()
   // Case 4: Ambiguous / Incomplete - Missing Purchase Date (T-002)
   it('Case 4 (Mock Test - Incomplete): T-002 missing purchase date -> Asks clarification; when answered, produces proposal citing POL-REFUND-01', async () => {
     // Step 4a: First turn without purchase date
-    const turn1 = await investigateTicket({ ticket_id: 'T-002' }, db);
+    const turn1 = await MockModel.investigateTicket({ ticket_id: 'T-002' }, db);
     expect(turn1.type).toBe('clarification');
     if (turn1.type === 'clarification') {
       expect(turn1.question.toLowerCase()).toContain('purchase date');
@@ -85,7 +87,7 @@ describe('Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)', ()
     }
 
     // Step 4b: Support officer answers clarification with purchase date
-    const turn2 = await investigateTicket({
+    const turn2 = await MockModel.investigateTicket({
       ticket_id: 'T-002',
       clarification_answer: 'Customer stated purchase date was 2026-10-18'
     }, db);
@@ -102,8 +104,8 @@ describe('Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)', ()
   });
 
   // Case 5: Simulated Model / Tool Failure
-  it('Case 5 (Mock Test - Simulated Failure): Model call failure aborts loop cleanly, saves nothing, enables retry', async () => {
-    const res = await investigateTicket({ ticket_id: 'T-001', force_failure: true }, db);
+  it('Case 5 (Mock Test - Simulated Failure): Model call failure aborts cleanly, saves nothing, enables retry', async () => {
+    const res = await MockModel.investigateTicket({ ticket_id: 'T-001', force_failure: true }, db);
     expect(res.type).toBe('error');
     if (res.type === 'error') {
       expect(res.message).toContain('SIMULATED_FAILURE');
@@ -113,14 +115,14 @@ describe('Mock Tests: Hackathon Five-Case Evaluation Suite (seed-data.json)', ()
     const updates = await db.queryAll('SELECT * FROM ticket_updates');
     expect(updates).toHaveLength(0);
 
-    // Confirm immediate manual retry succeeds
-    const retryRes = await investigateTicket({ ticket_id: 'T-001', force_failure: false }, db);
+    // Confirm subsequent call succeeds
+    const retryRes = await MockModel.investigateTicket({ ticket_id: 'T-001', force_failure: false }, db);
     expect(retryRes.type).toBe('proposal');
   });
 
   // Case 6: Out-of-Policy Request - Price Match (T-005)
   it('Case 6 (Mock Test - Out-of-Policy): T-005 price match request -> Cites no matching policy and proposes Escalated status with empty policy_ids', async () => {
-    const res = await investigateTicket({ ticket_id: 'T-005' }, db);
+    const res = await MockModel.investigateTicket({ ticket_id: 'T-005' }, db);
     expect(res.type).toBe('proposal');
     if (res.type === 'proposal') {
       expect(res.category).toBe('Other');

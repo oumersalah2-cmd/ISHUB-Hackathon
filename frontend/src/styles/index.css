@@ -1,0 +1,235 @@
+/* ==========================================================================
+   LUCY CSR — Design System & Global Styles
+   Brand Palette:
+   - Orange: Primary action buttons, active states, accent highlights
+   - Dark Blue: Structural anchors, dark badges, card frames, elevation
+   - Typography Strict Rule: High-contrast Dark Gray or Black typography ONLY
+     NEVER use Orange or Dark Blue for body/reading text!
+   ========================================================================== */
+
+:root {
+  /* Brand: Vibrant Orange (Primary Action Buttons, Interactive Accents, Focus) */
+  --orange-25: #FFFAF3;
+  --orange-50: #FFF7ED;
+  --orange-100: #FFEDD5; /* Subtle orange container / highlight */
+  --orange-200: #FED7AA;
+  --orange-300: #FDBA74;
+  --orange-400: #FB923C;
+  --orange-500: #F97316; /* Primary Vibrant Orange */
+  --orange-600: #EA580C; /* Primary Button Hover */
+  --orange-700: #C2410C; /* Active / Clicked State */
+  --orange-800: #9A3412;
+  --orange-900: #7C2D12;
+  --orange-shadow: rgba(249, 115, 22, 0.28);
+
+  /* Brand: Deep Dark Blue (Structural Accents, Hero Banners, Elevation) */
+  --darkblue-25: #F8FAFC;
+  --darkblue-50: #F0F5FA; /* Subtle cool container */
+  --darkblue-100: #E1EBF7;
+  --darkblue-200: #C2D5ED;
+  --darkblue-300: #94B8DD;
+  --darkblue-400: #5F93C9;
+  --darkblue-500: #2563EB;
+  --darkblue-600: #1D4ED8;
+  --darkblue-700: #17365D;
+  --darkblue-800: #0F2644;
+  --darkblue-900: #0B1B32; /* Primary Deep Dark Blue */
+  --darkblue-950: #061120;
+  --darkblue-shadow: rgba(11, 27, 50, 0.25);
+
+  /* Aliases for legacy token compatibility so existing components adapt seamlessly */
+  --clay-50: var(--orange-50);
+  --clay-100: var(--orange-100);
+  --clay-200: var(--orange-200);
+  --clay-300: var(--orange-300);
+  --clay-400: var(--orange-400);
+  --clay-500: var(--orange-500);
+  --clay-600: var(--orange-600);
+  --clay-700: var(--orange-700);
+  --clay-800: var(--orange-800);
+  --clay-900: var(--orange-900);
+  --clay-shadow: var(--orange-shadow);
+
+  --butter-25: var(--orange-25);
+  --butter-50: var(--orange-50);
+  --butter-100: var(--orange-100);
+  --butter-200: var(--orange-200);
+  --butter-300: var(--orange-300);
+  --butter-400: var(--orange-400);
+  --butter-border: var(--orange-200);
+  --butter-shadow: var(--orange-shadow);
+
+  /* Strict Rule: High-contrast Dark Gray or Black for ALL typography */
+  /* NEVER use Orange or Dark Blue for body/reading text! */
+  --text-primary: #111827;    /* High-contrast Black (#111827, 16:1 contrast) */
+  --text-secondary: #2D3748;  /* High-contrast Slate Dark Gray (#2D3748, 10:1 contrast) */
+  --text-muted: #4B5563;      /* Crisp Accessible Neutral Gray (#4B5563, 6.5:1 contrast) */
+  --text-inverse: #FFFFFF;    /* Crisp White for solid Orange and Dark Blue buttons */
+
+  /* Neutral Surfaces & Borders */
+  --bg-app: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-surface-soft: #F1F5F9;
+  --border-light: #E2E8F0;
+  --border-medium: #CBD5E1;
+  --border-dark: #94A3B8;
+  --border-accent: var(--orange-500);
+
+  /* Semantic Feedback & Statuses */
+  --status-open-bg: #E0F2FE;
+  --status-open-text: #075985;
+  --status-open-border: #BAE6FD;
+
+  --status-investigating-bg: #FEF3C7;
+  --status-investigating-text: #92400E;
+  --status-investigating-border: #FDE68A;
+
+  --status-clarification-bg: #FFEDD5;
+  --status-clarification-text: #9A3412;
+  --status-clarification-border: #FED7AA;
+
+  --status-approved-bg: #DCFCE7;
+  --status-approved-text: #166534;
+  --status-approved-border: #BBF7D0;
+
+  --status-closed-bg: #F1F5F9;
+  --status-closed-text: #334155;
+  --status-closed-border: #E2E8F0;
+
+  --status-error-bg: #FEE2E2;
+  --status-error-text: #991B1B;
+  --status-error-border: #FECACA;
+
+  /* Priority Tokens */
+  --priority-urgent-bg: #FEE2E2;
+  --priority-urgent-text: #991B1B;
+  --priority-urgent-border: #FCA5A5;
+
+  --priority-high-bg: #FFEDD5;
+  --priority-high-text: #9A3412;
+  --priority-high-border: #FDBA74;
+
+  --priority-medium-bg: #FEF9C3;
+  --priority-medium-text: #854D0E;
+  --priority-medium-border: #FDE047;
+
+  --priority-low-bg: #F0FDF4;
+  --priority-low-text: #166534;
+  --priority-low-border: #BBF7D0;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 220ms ease-in-out;
+}
+
+/* Base Reset & Typography */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-primary);
+  background-color: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Typography styles */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 1.35rem;
+  letter-spacing: -0.015em;
+}
+
+h3 {
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+
+p, span, label, td, th {
+  color: var(--text-secondary);
+}
+
+small {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+code, pre {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.875rem;
+}
+
+a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--orange-500);
+  text-underline-offset: 3px;
+  transition: all var(--transition-fast);
+}
+
+a:hover {
+  color: var(--text-primary);
+  text-decoration-color: var(--orange-700);
+}
+
+/* Focus outlines in Orange */
+:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 2px;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}

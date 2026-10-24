@@ -16,15 +16,35 @@ Built for the university hackathon on a 100% genuine free-tier architecture.
 
 ---
 
-## 2. The Three Golden Rules
+---
 
-1. **Never commit keys, `.env`, or `.dev.vars`**: Keep all secrets out of git. Use `.env.example` as a template.
-2. **Pull before you push; never force push**: Protect git history. Open Pull Requests into `main`.
-3. **Stay in your own folder unless you agree with the owner**: Avoid cross-module collisions.
+## 2. Judges Quick Start (Live Demonstration)
+
+- **Live Deployed Dashboard**: `[OWNER_TO_FILL: https://resolvai-dashboard.pages.dev]`
+- **Live Deployed API Base**: `[OWNER_TO_FILL: https://ai-customer-support-agent-backend.<subdomain>.workers.dev/api]`
+- **Health Endpoint**: `GET /api/health` returns status, database connectivity, and AI provider/model.
+- **Reference Date**: `2026-10-24` (applies to all refund windows, shipping delays, and day counts).
+- **Official Seed Data**: 3 corporate policies (`POL-REFUND-01`, `POL-DELIVERY-01`, `POL-ACCOUNT-01`) and 5 initial tickets (`T-001` .. `T-005`).
+
+### Quick Judge Verification Steps:
+1. Open the live dashboard.
+2. Select **T-001** and click **Investigate Ticket** $\to$ observe live tool log and grounded refund draft citing `POL-REFUND-01` (4 days elapsed $\le$ 14).
+3. Select **T-002** and click **Investigate Ticket** $\to$ observe missing `purchase_date` detection and clarification dialog.
+4. Click **+ New Ticket** $\to$ submit a fresh complaint to verify input validation and sequential ID generation (`T-006`).
+5. Open `/outbox` on a second device $\to$ confirm approved records reopen with complete audit trails.
 
 ---
 
-## 3. Quick Start
+## 3. The Golden Rules
+
+1. **Never commit keys, `.env`, or `.dev.vars`**: Keep all secrets out of git. Use `.env.example` as a template.
+2. **Never fake AI outputs**: Rule-based answers are never presented as model outputs. Errors produce transparent `{ "type": "error", "message": "..." }` banners.
+3. **Pull before you push; never force push**: Protect git history. Open Pull Requests into `main`.
+4. **Stay in your own folder unless agreed with the owner**: Avoid cross-module collisions.
+
+---
+
+## 4. Quick Start (Local Development)
 
 ### Prerequisites
 - Node.js v20+ or v22+
@@ -36,43 +56,46 @@ Built for the university hackathon on a 100% genuine free-tier architecture.
 git clone https://github.com/oumersalah2-cmd/ISHUB-Hackathon.git
 cd ISHUB-Hackathon
 
+# Checkout active final branch
+git checkout integration/final
+
 # Install all workspace dependencies
 npm install
 ```
 
 ### Environment Configuration
-Copy the template environment file:
 ```bash
+# Copy template environment file (do not commit .env)
 cp .env.example .env
-# Set your free Google Gemini API key if executing live model calls:
-# GEMINI_API_KEY=your_key_here
+# Set your free Google AI Studio key (starts with AIzaSy...):
+# GEMINI_API_KEY=AIzaSy...
 ```
 
 ### Running Locally
 ```bash
-# Start both backend (http://localhost:8787) and frontend (http://localhost:5173)
+# Start backend (http://localhost:8787) and frontend (http://localhost:5173)
 npm run dev
 
 # Or run separately:
-npm run dev:backend     # Terminal 1: Hono REST API server
+npm run dev:backend     # Terminal 1: Hono API server with local SQLite
 npm run dev:frontend    # Terminal 2: React Vite development server
 ```
 
-### Running Tests & Seed
+### Running Tests & Diagnostics
 ```bash
-# Run the 20-test automated suite (Mock Tests + Invariants + Exact Date Math)
+# Run the 25-test automated Vitest suite (Mock Tests + Validation + Business Days + Grounding)
 npm test
 
-# Run live Gemini reasoning across tickets T-001..T-005
-npm run live-run
+# Check Gemini API key validity and model connectivity (prints status only, no keys)
+npx tsx backend/scripts/check_gemini.ts
 
-# Reseed database with official seed-data.json
-npm run seed
+# Run model reasoning across tickets T-001..T-005 (reports LIVE MODEL or ERROR per ticket)
+npm run live-run
 ```
 
 ---
 
-## 4. Repository Folder Map
+## 5. Repository Folder Map
 
 ```
 .
@@ -81,47 +104,43 @@ npm run seed
 ├── package.json              # Monorepo npm workspaces configuration
 ├── CONTRIBUTING.md           # Branching rules, merge windows & commit guide
 ├── README.md                 # Project guide & quick start
-├── live_run.ts               # Runner for live Gemini model execution
-├── frontend/                 # React 19 + TypeScript + Vite Dashboard
+├── frontend/                 # Member 1's "LUCY CSR" React 19 + Vite Dashboard
 │   ├── src/
 │   │   ├── components/       # Stepper, Evidence Viewer, Response Editor, Modal
-│   │   ├── App.tsx           # Main Support Officer Dashboard
-│   │   └── services/api.ts   # Typed API client
+│   │   ├── pages/            # InboxPage, InvestigationPage, OutboxPage
+│   │   └── services/api.js   # Dynamic API client with Vite proxy & health check
 │   └── package.json
 ├── backend/                  # Cloudflare Workers / Hono REST API
 │   ├── .dev.vars.example     # Cloudflare Workers secrets template
-│   ├── .gitignore            # Backend-specific ignore rules
+│   ├── wrangler.toml         # Cloudflare Worker & D1 configuration
 │   ├── live_run.ts           # Script executing real model against T-001..T-005
+│   ├── scripts/
+│   │   └── check_gemini.ts   # Safe API key diagnostics script
 │   ├── migrations/           # D1 SQL schema migrations (0001_initial_schema.sql)
 │   ├── seed/                 # Official seed-data.json and seed script
 │   ├── src/
-│   │   ├── routes/           # REST endpoints (/tickets, /policies, /agent, /confirm)
+│   │   ├── routes/           # REST endpoints (/tickets, /policies, /health, /outbox)
 │   │   ├── services/         # SQLite/D1 database service & AI reasoning core
-│   │   ├── tools/            # Tool A (read_ticket), Tool B (search_policies), Tool C (update_ticket)
-│   │   └── utils/dateUtils.ts # Deterministic UTC date math
-│   ├── tests/                # Vitest suites (system, 5-cases, business days)
+│   │   ├── tools/            # read_ticket, search_policies, update_ticket
+│   │   └── utils/dateUtils.ts # Deterministic UTC business day arithmetic
+│   ├── tests/                # 25 Vitest tests (system, 5-cases, business days)
 │   └── package.json
-└── docs/                     # Hackathon Documentation & Reports
+└── docs/                     # Submission Documentation
     ├── ARCHITECTURE.md       # Architectural diagrams & component specs
-    ├── DEMO_SCRIPT.md        # 10-minute presentation guide & Q&A defense
+    ├── DEPLOYMENT.md         # Exact copy-paste Cloudflare deployment runbook
+    ├── DEMO_SCRIPT.md        # 10-minute presentation guide & 2-min judge Q&A defense
     ├── SERVICE_REGISTER.md   # Cloud service register & free-tier limits
     ├── TEAM_ROLES.md         # 5 student responsibilities & deliverables
-    └── TEST_REPORT.md        # Complete 20-test validation matrix
+    ├── CONTRIBUTION_NOTES.md # Individual contribution notes with placeholders
+    ├── KNOWN_LIMITATIONS.md  # Honest technical constraints record
+    └── TEST_REPORT.md        # Complete 25-test validation matrix
 ```
 
 ---
 
-## 5. Free-Services Rule
+## 6. Free-Services Rule
 
 This application strictly operates within 100% free tiers:
 - **No paid cloud services**: No AWS, GCP billing, or paid subscriptions.
 - **No credit card required**: Cloudflare Workers free plan & Google AI Studio free tier.
 - **No hardcoded secrets**: All API keys are loaded via runtime environment variables.
-
----
-
-## 6. Known Issues Before First Demo
-
-1. **Demo Data Synchronization**: Local SQLite database is 100% synchronized with `seed-data.json` (`POL-REFUND-01`, `POL-DELIVERY-01`, `POL-ACCOUNT-01` and `T-001`..`T-005`). One must ensure remote Cloudflare D1 applies `0001_initial_schema.sql` and `seed.sql` via Wrangler before remote deployment.
-2. **Live Gemini API Key**: In local offline evaluation, the reasoning engine uses a grounded deterministic fallback engine. For the live evaluation stage, teammates must provide their free `GEMINI_API_KEY` in `.env` to execute `npm run live-run`.
-3. **Draft Grounding**: Response drafts are strictly grounded in policy text and ticket facts. Ensure future prompt changes do not introduce prohibited terms like OTP or prepaid labels.

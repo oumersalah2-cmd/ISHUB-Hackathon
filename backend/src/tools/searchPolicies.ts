@@ -43,11 +43,44 @@ export async function searchPolicies(
   }
 
   // Tokenize keywords for flexible matching
-  const tokens = searchTerm
+  const rawTokens = searchTerm
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, ' ')
     .split(/\s+/)
     .filter(t => t.length > 2);
+
+  // Synonym expansion for common ticket vocabulary (as required by specification)
+  const synonymMap: Record<string, string[]> = {
+    'money': ['refund'],
+    'back': ['refund'],
+    'return': ['refund'],
+    'broken': ['refund'],
+    'damaged': ['refund'],
+    'parcel': ['delivery', 'shipping'],
+    'shipped': ['delivery', 'shipping'],
+    'package': ['delivery', 'shipping'],
+    'carrier': ['delivery'],
+    'arrived': ['delivery', 'shipping'],
+    'arrive': ['delivery', 'shipping'],
+    'login': ['account', 'lock', 'reset'],
+    'locked': ['account', 'lock', 'reset'],
+    'lockout': ['account', 'lock', 'reset'],
+    'password': ['account', 'reset', 'unlock']
+  };
+
+  const expandedTokens = new Set<string>(rawTokens);
+  for (const token of rawTokens) {
+    if (synonymMap[token]) {
+      synonymMap[token].forEach(syn => expandedTokens.add(syn));
+    }
+  }
+
+  // Handle multi-word phrase "money back"
+  if (searchTerm.toLowerCase().includes('money back')) {
+    expandedTokens.add('refund');
+  }
+
+  const tokens = Array.from(expandedTokens);
 
   let sql = 'SELECT id, policy_code, title, category, policy_text, applicable_conditions, created_at FROM policies WHERE 1=1';
   const params: unknown[] = [];
