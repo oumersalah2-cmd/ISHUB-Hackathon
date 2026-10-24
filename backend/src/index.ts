@@ -20,17 +20,43 @@ app.use('*', logger());
 
 // Middleware: CORS restricted to allowed origins
 app.use('*', async (c, next) => {
-  const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
+  const rawAllowed = (process.env.ALLOWED_ORIGIN || '*').trim();
   const corsMiddleware = cors({
-    origin: (origin) => {
-      // Allow localhost frontend during development and testing
-      if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-        return origin || '*';
+    origin: (incomingOrigin) => {
+      if (!incomingOrigin) return '*';
+
+      const cleanIncoming = incomingOrigin.trim().replace(/\/+$/, '');
+      const cleanAllowed = rawAllowed.replace(/\/+$/, '');
+
+      // If allowedOrigin is '*', reflect the incoming origin so credentials work
+      if (cleanAllowed === '*' || cleanAllowed === '') {
+        return incomingOrigin;
       }
-      return allowedOrigin === '*' ? origin : allowedOrigin;
+
+      // If allowed origin matches (with or without trailing slash)
+      if (cleanAllowed === cleanIncoming) {
+        return incomingOrigin;
+      }
+
+      // If allowed origin contains comma-separated origins
+      const allowedList = cleanAllowed.split(',').map(s => s.trim().replace(/\/+$/, ''));
+      if (allowedList.includes(cleanIncoming)) {
+        return incomingOrigin;
+      }
+
+      // Automatically allow Vercel deployments and localhost
+      if (
+        cleanIncoming.endsWith('.vercel.app') ||
+        cleanIncoming.includes('localhost') ||
+        cleanIncoming.includes('127.0.0.1')
+      ) {
+        return incomingOrigin;
+      }
+
+      return cleanAllowed;
     },
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     exposeHeaders: ['Content-Length'],
     maxAge: 600,
     credentials: true,
