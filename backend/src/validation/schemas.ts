@@ -24,7 +24,7 @@ export const updateTicketInputSchema = z.object({
   approved_category: categorySchema,
   proposed_status: statusSchema,
   response_draft: z.string().trim().min(5, 'Response draft must be at least 5 characters long').max(4000),
-  supporting_policy_ids: z.array(z.string().trim().min(1)).min(1, 'At least one supporting policy ID must be provided'),
+  supporting_policy_ids: z.array(z.string().trim().min(1)).default([]),
   is_confirmed: z.literal(true, {
     errorMap: () => ({ message: 'Explicit human approval is required (is_confirmed must be true)' })
   })

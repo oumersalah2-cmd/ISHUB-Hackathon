@@ -10,7 +10,7 @@ export const ticketsRouter = new Hono();
 ticketsRouter.get('/', async (c) => {
   const db = getDatabase(c.env as any);
   const tickets = await db.queryAll<Ticket>(
-    'SELECT id, customer_name, customer_email, subject, description, category, status, purchase_date, created_at, updated_at FROM tickets ORDER BY id ASC'
+    'SELECT id, customer_name, customer_email, subject, description, category, status, order_id, purchase_date, shipping_date, note, created_at, updated_at FROM tickets ORDER BY id ASC'
   );
 
   return c.json({

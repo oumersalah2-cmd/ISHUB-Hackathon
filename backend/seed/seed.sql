@@ -1,129 +1,102 @@
--- Synthetic Demo Dataset for AI Customer Support Resolution Agent
--- All names, emails, and scenarios are completely fictitious.
+-- Fictitious demo data. Reference date for the demo: 2026-10-24.
+-- Conforms strictly to seed-data.json
 
 -- Clear previous data
 DELETE FROM ticket_updates;
 DELETE FROM policies;
 DELETE FROM tickets;
 
--- Insert Synthetic Policies
+-- Insert Seed Policies
 INSERT INTO policies (id, policy_code, title, category, policy_text, applicable_conditions) VALUES
 (
-  'POL-REF-01',
-  'POL-REF-01',
-  'Standard 30-Day Return & Full Refund Policy',
-  'Refund',
-  'Customers are entitled to a full refund or direct exchange on retail items if requested within 30 calendar days of the verified purchase date. The customer must specify the purchase date and return the item in good physical condition with original packaging. For defective or faulty merchandise reported within this 30-day window, a full refund including prepaid return shipping is issued immediately upon receipt.',
-  'Purchase date must be verified; request must be made within 30 days of purchase; customer must retain valid order details.'
-),
-(
-  'POL-DEL-01',
-  'POL-DEL-01',
-  'Courier Shipment Delay & Lost Package Policy',
-  'Delivery',
-  'When a standard or express delivery package experiences no carrier transit updates or tracking movement for five (5) or more business days, support officers are authorized to declare the shipment delayed in transit. Support officers should offer the customer an immediate priority replacement shipment at no extra charge or a full refund if the customer prefers cancellation.',
-  'Tracking scan stalled for 5+ business days; shipping address verified; package not marked as delivered by courier.'
-),
-(
   'POL-REFUND-01',
   'POL-REFUND-01',
-  'Standard 30-Day Return & Full Refund Policy',
+  'Refund Policy',
   'Refund',
-  'Customers are entitled to a full refund or direct exchange on retail items if requested within 30 calendar days of the verified purchase date. The customer must specify the purchase date and return the item in good physical condition with original packaging. For defective or faulty merchandise reported within this 30-day window, a full refund including prepaid return shipping is issued immediately upon receipt.',
-  'Purchase date must be verified; request must be made within 30 days of purchase; customer must retain valid order details.'
+  'Customers may request a full refund within 14 days of the purchase date for physical items that are unused and in original packaging. A refund request must include the order number and the purchase date. Requests made after 14 days are not eligible for a refund; the agent may offer store credit of 50% of the item price instead. Digital products are not refundable once downloaded.',
+  'Order number and purchase date required. Physical items must be unused and in original packaging within 14 days of purchase date for full refund. Over 14 days offers 50% store credit.'
 ),
 (
   'POL-DELIVERY-01',
   'POL-DELIVERY-01',
-  'Courier Shipment Delay & Lost Package Policy',
+  'Delivery Delay Policy',
   'Delivery',
-  'When a standard or express delivery package experiences no carrier transit updates or tracking movement for five (5) or more business days, support officers are authorized to declare the shipment delayed in transit. Support officers should offer the customer an immediate priority replacement shipment at no extra charge or a full refund if the customer prefers cancellation.',
-  'Tracking scan stalled for 5+ business days; shipping address verified; package not marked as delivered by courier.'
+  'Standard delivery takes 3 to 5 business days after the shipping date. If an order has not arrived 7 business days after shipping, support opens a carrier investigation and sets the ticket to In Progress. If the order has not arrived 10 business days after shipping, the customer may choose a free re-shipment or a full refund. The order number and shipping date are required to apply this policy.',
+  'Order number and shipping date required. 7 business days without arrival triggers carrier investigation and In Progress status. 10 business days without arrival offers choice of free re-shipment or full refund.'
 ),
 (
   'POL-ACCOUNT-01',
   'POL-ACCOUNT-01',
-  'Account Lockout & Secure Password Recovery Policy',
+  'Account Access Policy',
   'Account',
-  'If a customer account is locked due to repeated incorrect password attempts or failing to receive SMS two-factor authentication codes, support officers must confirm the primary email registered to the account and issue an encrypted, time-limited one-time password (OTP) password reset link. Support officers are strictly prohibited from setting or requesting customer passwords in plain text. If customer cannot reach their registered email, escalate ticket.',
-  'Customer account locked; customer email address on ticket matches internal registered profile; 2FA delivery failed.'
-),
-(
-  'POL-ACC-01',
-  'POL-ACC-01',
-  'Account Lockout & Secure Password Recovery Policy',
-  'Account',
-  'If a customer account is locked due to repeated incorrect password attempts or failing to receive SMS two-factor authentication codes, support officers must confirm the primary email registered to the account and issue an encrypted, time-limited one-time password (OTP) password reset link. Support officers are strictly prohibited from setting or requesting customer passwords in plain text. If customer cannot reach their registered email, escalate ticket.',
-  'Customer account locked; customer email address on ticket matches internal registered profile; 2FA delivery failed.'
-),
-(
-  'POL-DMG-01',
-  'POL-DMG-01',
-  'Damaged or Incorrect Product Dispatch Policy',
-  'Refund',
-  'Customers who receive a damaged item or an incorrect product that does not match the order manifest must notify customer support within fourteen (14) calendar days of delivery. Upon confirming the error, the support team will immediately dispatch the correct replacement item with complimentary express delivery or issue a 100% refund without requiring return of low-value incorrect items.',
-  'Reported within 14 calendar days of delivery; product mismatch or visible damage verified; valid order ID.'
+  'After 5 failed login attempts an account is locked for 30 minutes. Customers can unlock it sooner by requesting a password reset link sent only to the registered email address. Support staff must never ask for or accept a customer''s password. If the customer cannot access the registered email, the ticket must be escalated to the Security team for identity verification.',
+  'Locked after 5 failed attempts for 30 minutes. Unlock sooner via password reset link sent only to registered email. Never ask/accept password. Escalate to Security if registered email is inaccessible.'
 );
 
--- Insert Synthetic Demo Tickets
-INSERT INTO tickets (id, customer_name, customer_email, subject, description, category, status, purchase_date) VALUES
+-- Insert Seed Tickets
+INSERT INTO tickets (id, customer_name, customer_email, subject, description, category, status, order_id, purchase_date, shipping_date, note) VALUES
 (
-  'T-1001',
-  'Liam Walker',
-  'liam.walker.fake@example.com',
-  'Return request for SoundPro Wireless Headphones',
-  'Hi support team, I purchased your SoundPro Wireless Noise-Cancelling Headphones recently, but they fit too tightly on my head. I would like to return them for a full refund back to my Visa card please. Let me know the procedure.',
+  'T-001',
+  'Abel Tesfaye',
+  'abel@example.com',
+  'Refund for wireless headphones',
+  'I bought wireless headphones (order ORD-1001) on 2026-10-20 but they do not fit me. They are unopened. I would like a refund.',
   'Refund',
   'Open',
-  NULL -- Intentionally NULL to trigger missing-information clarification workflow
+  'ORD-1001',
+  '2026-10-20',
+  NULL,
+  'Ordinary case: complete refund request, within 14 days.'
 ),
 (
-  'T-1002',
-  'Sophia Martinez',
-  'sophia.martinez.fake@example.com',
-  'Defective Barista Supreme Espresso Machine',
-  'Hello, I purchased the Barista Supreme Espresso Machine on 2026-10-12 (Order #ORD-7712). Yesterday morning the steam boiler completely stopped heating up and emits a clicking noise. The purchase was made only 12 days ago, which is well within your 30-day return policy. I have all original packaging ready. Please process my refund.',
+  'T-002',
+  'Selam Bekele',
+  'selam@example.com',
+  'Want my money back for blender',
+  'The blender I ordered (order ORD-1002) stopped working and I want a refund. Please help.',
   'Refund',
   'Open',
-  '2026-10-12' -- Complete details, within 30 days
+  'ORD-1002',
+  NULL,
+  NULL,
+  'Ambiguous/incomplete case: purchase date missing, agent must ask for it.'
 ),
 (
-  'T-1003',
-  'Marcus Chen',
-  'marcus.chen.fake@example.com',
-  'Express courier shipment stalled for Ergonomic Mesh Chair',
-  'I placed an order for the Ergonomic Mesh Chair with 2-day express delivery (Tracking: EXP-99210-FAKE). The courier status has been completely stuck at the regional distribution center for 6 business days with zero movement. I need this chair for my home office immediately. Please either send a replacement right away or refund my order.',
+  'T-003',
+  'Dawit Alemu',
+  'dawit@example.com',
+  'Order has not arrived',
+  'My order ORD-1003 was shipped on 2026-10-08 and still has not arrived. It has been over two weeks. What can you do?',
   'Delivery',
   'Open',
-  '2026-10-14'
+  'ORD-1003',
+  '2026-10-07',
+  '2026-10-08',
+  'Ordinary case: delivery delay beyond 10 business days (re-ship or refund).'
 ),
 (
-  'T-1004',
-  'Amara Diallo',
-  'amara.diallo.fake@example.com',
-  'Account locked out after password reset attempts',
-  'My account is currently locked out after I typed an old password three times. When I tried using the "Forgot Password" link on the website, the SMS verification code was never sent to my phone. I need to access my recent invoices urgently. Can you send a secure reset link to my registered email?',
-  'Account Access',
+  'T-004',
+  'Hana Girma',
+  'hana@example.com',
+  'Locked out of my account',
+  'I tried to log in several times and now my account says it is locked. I still have access to my registered email.',
+  'Account',
   'Open',
-  NULL
+  NULL,
+  NULL,
+  NULL,
+  'Ordinary case: account lockout, password reset link to registered email.'
 ),
 (
-  'T-1005',
-  'Elena Rostova',
-  'elena.rostova.fake@example.com',
-  'Commercial enterprise software SLA and escrow customization',
-  'Our enterprise legal department requires a customized source code escrow agreement and 99.999% bespoke financial uptime warranty before our 10 team member licenses can be renewed. None of the standard web terms address enterprise source code escrow.',
+  'T-005',
+  'Yonas Haile',
+  'yonas@example.com',
+  'Price match request',
+  'I saw the same keyboard (order ORD-1005) cheaper at another shop. Can you match their price and refund the difference?',
   'Other',
   'Open',
-  '2026-10-01' -- Uncovered by standard consumer policies; must lead to Escalated recommendation
-),
-(
-  'T-1006',
-  'Devon Reed',
-  'devon.reed.fake@example.com',
-  'Incorrect package received - USB hub delivered instead of Mechanical Keyboard',
-  'I received my shipment today for order #ORD-44910. I opened the sealed cardboard box expecting the Apex Pro RGB Mechanical Keyboard, but inside was a small 4-port USB hub. The delivery was made yesterday. Please expedite the correct keyboard to me.',
-  'Refund',
-  'Open',
-  '2026-10-22'
+  'ORD-1005',
+  '2026-10-18',
+  NULL,
+  'Out-of-policy case: no policy covers price matching, agent must say so and escalate.'
 );

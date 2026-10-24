@@ -11,7 +11,10 @@ export interface Ticket {
   description: string;
   category: TicketCategory;
   status: TicketStatus;
-  purchase_date: string | null;
+  order_id?: string | null;
+  purchase_date?: string | null;
+  shipping_date?: string | null;
+  note?: string;
   created_at: string;
   updated_at: string;
   // Computed values per spec (TODAY = 2026-10-24)

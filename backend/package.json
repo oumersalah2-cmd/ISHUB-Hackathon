@@ -9,6 +9,7 @@
     "build": "tsc",
     "seed": "tsx seed/seed.ts",
     "deploy": "wrangler deploy",
+    "live-run": "tsx live_run.ts",
     "test": "vitest run"
   },
   "dependencies": {

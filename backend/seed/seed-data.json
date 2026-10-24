@@ -1,0 +1,85 @@
+{
+  "_note": "Fictitious demo data. Reference date for the demo: 2026-10-24.",
+  "policies": [
+    {
+      "id": "POL-REFUND-01",
+      "category": "Refund",
+      "title": "Refund Policy",
+      "text": "Customers may request a full refund within 14 days of the purchase date for physical items that are unused and in original packaging. A refund request must include the order number and the purchase date. Requests made after 14 days are not eligible for a refund; the agent may offer store credit of 50% of the item price instead. Digital products are not refundable once downloaded."
+    },
+    {
+      "id": "POL-DELIVERY-01",
+      "category": "Delivery",
+      "title": "Delivery Delay Policy",
+      "text": "Standard delivery takes 3 to 5 business days after the shipping date. If an order has not arrived 7 business days after shipping, support opens a carrier investigation and sets the ticket to In Progress. If the order has not arrived 10 business days after shipping, the customer may choose a free re-shipment or a full refund. The order number and shipping date are required to apply this policy."
+    },
+    {
+      "id": "POL-ACCOUNT-01",
+      "category": "Account",
+      "title": "Account Access Policy",
+      "text": "After 5 failed login attempts an account is locked for 30 minutes. Customers can unlock it sooner by requesting a password reset link sent only to the registered email address. Support staff must never ask for or accept a customer's password. If the customer cannot access the registered email, the ticket must be escalated to the Security team for identity verification."
+    }
+  ],
+  "tickets": [
+    {
+      "id": "T-001",
+      "customer_name": "Abel Tesfaye",
+      "customer_email": "abel@example.com",
+      "subject": "Refund for wireless headphones",
+      "description": "I bought wireless headphones (order ORD-1001) on 2026-10-20 but they do not fit me. They are unopened. I would like a refund.",
+      "order_id": "ORD-1001",
+      "purchase_date": "2026-10-20",
+      "shipping_date": null,
+      "status": "Open",
+      "note": "Ordinary case: complete refund request, within 14 days."
+    },
+    {
+      "id": "T-002",
+      "customer_name": "Selam Bekele",
+      "customer_email": "selam@example.com",
+      "subject": "Want my money back for blender",
+      "description": "The blender I ordered (order ORD-1002) stopped working and I want a refund. Please help.",
+      "order_id": "ORD-1002",
+      "purchase_date": null,
+      "shipping_date": null,
+      "status": "Open",
+      "note": "Ambiguous/incomplete case: purchase date missing, agent must ask for it."
+    },
+    {
+      "id": "T-003",
+      "customer_name": "Dawit Alemu",
+      "customer_email": "dawit@example.com",
+      "subject": "Order has not arrived",
+      "description": "My order ORD-1003 was shipped on 2026-10-08 and still has not arrived. It has been over two weeks. What can you do?",
+      "order_id": "ORD-1003",
+      "purchase_date": "2026-10-07",
+      "shipping_date": "2026-10-08",
+      "status": "Open",
+      "note": "Ordinary case: delivery delay beyond 10 business days (re-ship or refund)."
+    },
+    {
+      "id": "T-004",
+      "customer_name": "Hana Girma",
+      "customer_email": "hana@example.com",
+      "subject": "Locked out of my account",
+      "description": "I tried to log in several times and now my account says it is locked. I still have access to my registered email.",
+      "order_id": null,
+      "purchase_date": null,
+      "shipping_date": null,
+      "status": "Open",
+      "note": "Ordinary case: account lockout, password reset link to registered email."
+    },
+    {
+      "id": "T-005",
+      "customer_name": "Yonas Haile",
+      "customer_email": "yonas@example.com",
+      "subject": "Price match request",
+      "description": "I saw the same keyboard (order ORD-1005) cheaper at another shop. Can you match their price and refund the difference?",
+      "order_id": "ORD-1005",
+      "purchase_date": "2026-10-18",
+      "shipping_date": null,
+      "status": "Open",
+      "note": "Out-of-policy case: no policy covers price matching, agent must say so and escalate."
+    }
+  ]
+}

@@ -30,10 +30,15 @@ export async function searchPolicies(
   // If both category and search query are empty, return all policies
   if (!searchTerm && !category) {
     const allPolicies = await db.queryAll<Policy>('SELECT id, policy_code, title, category, policy_text, applicable_conditions, created_at FROM policies');
+    const mapped = allPolicies.map((p: any) => ({
+      ...p,
+      policy_id: p.policy_code || p.id,
+      text: p.policy_text
+    }));
     return {
       success: true,
-      policies: allPolicies,
-      count: allPolicies.length
+      policies: mapped,
+      count: mapped.length
     };
   }
 

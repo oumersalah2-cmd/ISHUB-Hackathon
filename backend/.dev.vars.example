@@ -1,0 +1,4 @@
+# Cloudflare Workers Local Development Secrets Template
+# NEVER commit real keys. Copy this file to .dev.vars for local testing.
+GEMINI_API_KEY=your-key-here
+GROQ_API_KEY=your-key-here

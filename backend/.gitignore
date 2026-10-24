@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+
+# Cloudflare & Wrangler local files
+.wrangler/
+.miniflare/
+
+# Environment variables & secrets (CRITICAL: Never commit secrets)
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# Logs
+*.log
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# Local databases
+*.db
+*.db-wal
+*.db-shm
+data/

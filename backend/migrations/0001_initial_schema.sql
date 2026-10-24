@@ -15,7 +15,10 @@ CREATE TABLE IF NOT EXISTS tickets (
   description TEXT NOT NULL,
   category TEXT NOT NULL CHECK(category IN ('Refund', 'Delivery', 'Account', 'Account Access', 'Other')),
   status TEXT NOT NULL CHECK(status IN ('Open', 'In Progress', 'Pending Customer', 'Resolved', 'Escalated')),
+  order_id TEXT,
   purchase_date TEXT,
+  shipping_date TEXT,
+  note TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -30,7 +33,7 @@ CREATE TABLE IF NOT EXISTS policies (
   title TEXT NOT NULL,
   category TEXT NOT NULL CHECK(category IN ('Refund', 'Delivery', 'Account', 'Account Access', 'Other')),
   policy_text TEXT NOT NULL,
-  applicable_conditions TEXT NOT NULL,
+  applicable_conditions TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -45,7 +48,7 @@ CREATE TABLE IF NOT EXISTS ticket_updates (
   proposed_status TEXT NOT NULL CHECK(proposed_status IN ('Open', 'In Progress', 'Pending Customer', 'Resolved', 'Escalated')),
   approved_category TEXT NOT NULL CHECK(approved_category IN ('Refund', 'Delivery', 'Account', 'Account Access', 'Other')),
   response_draft TEXT NOT NULL,
-  evidence_policy_ids TEXT NOT NULL, -- JSON array of strings e.g. ["POL-REF-01"]
+  evidence_policy_ids TEXT NOT NULL, -- JSON array of strings e.g. ["POL-REFUND-01"]
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

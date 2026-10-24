@@ -15,6 +15,7 @@
     "build:frontend": "npm --workspace=frontend run build",
     "build:backend": "npm --workspace=backend run build",
     "test": "npm --workspace=backend run test",
+    "live-run": "npx --workspace=backend tsx live_run.ts",
     "seed": "npm --workspace=backend run seed"
   },
   "devDependencies": {

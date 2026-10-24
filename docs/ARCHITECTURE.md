@@ -65,7 +65,7 @@ graph TD
 ### 3.3 Persistent Database (`Cloudflare D1` / SQLite)
 - **Tables**:
   - `tickets`: Holds customer name, fictional email, subject, description, category, status, purchase date, timestamps.
-  - `policies`: Contains policy code (`POL-REF-01`, etc.), title, category, policy text, applicable conditions.
+  - `policies`: Contains policy code (`POL-REFUND-01`, `POL-DELIVERY-01`, `POL-ACCOUNT-01`), title, category, policy text, applicable conditions.
   - `ticket_updates`: Stores audit records of approved changes, including previous/proposed statuses, response draft, and cited policy IDs.
 
 ### 3.4 AI Integration & Function Calling

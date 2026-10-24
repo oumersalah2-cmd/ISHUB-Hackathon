@@ -3,10 +3,13 @@ import type { Ticket, TicketCategory, TicketStatus } from '../types/index.js';
 
 export interface UpdateTicketInput {
   ticket_id: string;
-  category: TicketCategory;
-  status: TicketStatus;
+  category?: TicketCategory;
+  status?: TicketStatus;
+  approved_category?: TicketCategory;
+  proposed_status?: TicketStatus;
   response_draft: string;
-  policy_ids: string[];
+  policy_ids?: string[];
+  supporting_policy_ids?: string[];
   is_confirmed?: boolean; // True only when submitted by human support officer
 }
 
@@ -143,7 +146,7 @@ export async function updateTicket(
     );
 
     const foundSet = new Set(foundPolicies.flatMap(p => [p.id, p.policy_code]));
-    const missing = policyIdsArray.filter(pid => !foundSet.has(pid));
+    const missing = policyIdsArray.filter((pid: string) => !foundSet.has(pid));
 
     if (missing.length > 0) {
       return {
