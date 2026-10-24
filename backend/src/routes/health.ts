@@ -22,7 +22,7 @@ healthRouter.get('/', async (c) => {
       },
       ai: {
         provider: process.env.AI_PROVIDER || (c.env as any)?.AI_PROVIDER || 'gemini',
-        model: process.env.MODEL_NAME || (c.env as any)?.MODEL_NAME || 'gemini-2.5-flash'
+        model: process.env.MODEL_NAME || (c.env as any)?.MODEL_NAME || 'gemini-3.8-flash'
       }
     });
   } catch (error: any) {

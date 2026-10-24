@@ -50,6 +50,9 @@ Thumbs.db
 .*.swp
 *~
 .*~
+*.save
+.*.save
+*.bak
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json

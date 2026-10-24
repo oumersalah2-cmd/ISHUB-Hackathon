@@ -22,6 +22,12 @@ dist/
 # OS & Editor files
 .DS_Store
 Thumbs.db
+*.swp
+.*.swp
+*~
+.*~
+*.save
+.*.save
 
 # Test coverage
 coverage/

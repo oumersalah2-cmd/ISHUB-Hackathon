@@ -21,7 +21,7 @@ if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() !== '') {
 
 async function checkGemini() {
   console.log(`Source: ${keySource}`);
-  const modelName = process.env.MODEL_NAME || 'gemini-2.5-flash';
+  const modelName = process.env.MODEL_NAME || 'gemini-3.8-flash';
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey || apiKey.trim() === '' || apiKey === 'your_gemini_api_key_here' || apiKey === 'your-key-here') {
