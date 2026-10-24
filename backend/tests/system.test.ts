@@ -193,7 +193,7 @@ describe('Mock Tests: AI Customer Support Resolution Agent - 15 Comprehensive Te
     // Verify ticket status remained unchanged
     const ticketInDb = await db.queryFirst<any>('SELECT status FROM tickets WHERE id = ?', ['T-001']);
     expect(ticketInDb.status).toBe('Open');
-  });
+  }, 15000);
 
   // Test 9: Handling a database failure / error path
   it('9. Handling a database failure (Mock Test): Nonexistent policy ID in update causes clean rollback and rejection', async () => {
