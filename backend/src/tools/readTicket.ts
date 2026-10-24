@@ -20,11 +20,12 @@ export async function readTicket(
 ): Promise<ReadTicketResult> {
   const parsed = readTicketInputSchema.safeParse(input);
   if (!parsed.success) {
+    const errorDetails = (parsed.error.issues || (parsed.error as any).errors || []).map((e: any) => e.message).join(', ');
     return {
       success: false,
       missing_fields: [],
       error_code: 'INVALID_ARGUMENT',
-      error: `Validation error: ${parsed.error.errors.map(e => e.message).join(', ')}`
+      error: `Validation error: ${errorDetails}`
     };
   }
 

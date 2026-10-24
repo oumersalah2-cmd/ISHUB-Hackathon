@@ -12,9 +12,10 @@ agentRouter.post('/investigate', async (c) => {
     const parsed = investigateRequestSchema.safeParse(body);
 
     if (!parsed.success) {
+      const errorDetails = (parsed.error.issues || (parsed.error as any).errors || []).map((e: any) => e.message).join(', ');
       return c.json({
         type: 'error',
-        message: `Validation error: ${parsed.error.errors.map(e => e.message).join(', ')}`
+        message: `Validation error: ${errorDetails}`
       }, 400);
     }
 

@@ -16,11 +16,12 @@ export async function searchPolicies(
 ): Promise<SearchPoliciesResult> {
   const parsed = searchPoliciesInputSchema.safeParse(input);
   if (!parsed.success) {
+    const errorDetails = (parsed.error.issues || (parsed.error as any).errors || []).map((e: any) => e.message).join(', ');
     return {
       success: false,
       policies: [],
       count: 0,
-      error: `Validation error: ${parsed.error.errors.map(e => e.message).join(', ')}`
+      error: `Validation error: ${errorDetails}`
     };
   }
 
