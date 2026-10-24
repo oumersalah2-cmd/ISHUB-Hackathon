@@ -37,39 +37,41 @@ graph TD
 
 ## 3. Component Details
 
-### 3.1 Frontend (`frontend/`)
-- **Technology**: React 19, TypeScript, Vite.
-- **Styling**: Modern Vanilla CSS design system with custom tokens, sleek dark/light mode accents, glassmorphic panels, and responsive layout.
+### 3.1 Frontend (`frontend/` - Member 1: LUCY CSR)
+- **Technology**: React 19, Vite, Lucide Icons.
+- **Design**: Member 1's approved "LUCY CSR" dashboard with butter/indigo accents, crisp typography, and mobile-responsive layout.
 - **Key Views & Components**:
-  - `TicketList`: Displays synthetic demo tickets with status badges, customer name, and category.
-  - `InvestigationPanel`: Central workspace showing ticket metadata, complaint details, and investigation controls.
-  - `AgentWorkflowTracker`: Real-time visual stepper indicating the agent's current stage (Reading Ticket $\to$ Searching Policies $\to$ Assessing Completeness $\to$ Proposing Resolution $\to$ Awaiting Approval $\to$ Saved).
-  - `PolicyEvidenceViewer`: Transparent inspection panel showing policy IDs, titles, and exact matching clauses.
-  - `ClarificationPrompt`: Interactive dialog when missing information (such as purchase date) must be supplied.
-  - `ResolutionEditor`: Editable proposal draft, recommended next status, and assigned category.
-  - `ApprovalModal`: Explicit confirmation interface preventing unauthorized or automated database writes.
-  - `AuditHistory`: Inspects previous ticket updates and allows reopening historical records.
+  - `InboxPage`: Displays support tickets (T-001..T-005) with status filters, search, AI model status pill, and "+ New Ticket" modal.
+  - `InvestigationPage`: Central workspace with `InvestigationTimeline` progress stepper, `TicketOverviewCard`, `AgentActivityFeed`, `PolicyEvidenceViewer`, `ClarificationForm`, and `ProposalReviewSection`.
+  - `OutboxPage`: Internal outbox displaying archived resolution records with a one-click "Reopen in Workspace" capability.
+  - `NewTicketModal`: Interactive form to submit new judge complaints with client and backend validation.
 
-### 3.2 Backend (`backend/`)
-- **Technology**: Cloudflare Workers / Hono running TypeScript.
-- **REST API Endpoints**:
-  - `GET /api/health`: Health status and database connectivity check.
-  - `GET /api/tickets`: Retrieve all demo tickets.
-  - `GET /api/tickets/:id`: Retrieve single ticket with validation.
+### 3.2 Backend (`backend/` - Lead Engineer & Team)
+- **Technology**: Cloudflare Workers / Hono running TypeScript; local SQLite (`node:sqlite`) and remote Cloudflare D1.
+- **Unified REST API Endpoints**:
+  - `GET /api/health` and `/health`: Database connectivity and AI provider/model inspection.
+  - `GET /api/tickets`: Retrieve all support tickets.
+  - `GET /api/tickets/:id`: Retrieve single ticket with computed day elapsed counts.
+  - `POST /api/tickets`: Create fresh ticket with length and date validation.
   - `GET /api/policies`: Retrieve available policy records.
-  - `POST /api/agent/investigate`: Execute bounded AI agent workflow for a ticket.
-  - `POST /api/tickets/:id/confirm`: Explicit human confirmation endpoint to execute `update_ticket`.
-  - `GET /api/tickets/:id/updates`: Retrieve audit history for a specific ticket.
-  - `GET /api/updates/:id`: Retrieve specific historical update record.
+  - `POST /api/tickets/:id/investigate`: Execute bounded AI agent workflow (rate limited).
+  - `POST /api/tickets/:id/clarify`: Submit human clarification response to resume investigation.
+  - `POST /api/tickets/:id/approve` and `POST /:id/confirm`: Enforce human confirmation gate before saving.
+  - `GET /api/outbox` and `GET /api/updates/:id`: Retrieve archived resolution records.
 
-### 3.3 Persistent Database (`Cloudflare D1` / SQLite)
-- **Tables**:
-  - `tickets`: Holds customer name, fictional email, subject, description, category, status, purchase date, timestamps.
-  - `policies`: Contains policy code (`POL-REFUND-01`, `POL-DELIVERY-01`, `POL-ACCOUNT-01`), title, category, policy text, applicable conditions.
-  - `ticket_updates`: Stores audit records of approved changes, including previous/proposed statuses, response draft, and cited policy IDs.
+### 3.3 Persistent Storage & Reference Data
+- **Demo Reference Date**: Anchor date is strictly `2026-10-24`.
+- **Database Tables**:
+  - `tickets`: Holds customer name, fictional email, subject, description, category, status, purchase_date, shipping_date.
+  - `policies`: Contains 3 corporate policies: `POL-REFUND-01` (14-day refund window), `POL-DELIVERY-01` (10 business days threshold), and `POL-ACCOUNT-01` (account lockout & password reset link).
+  - `ticket_updates`: Audit outbox table storing approved resolution drafts, status transitions, and supporting policy citations.
 
-### 3.4 AI Integration & Function Calling
-- **Provider**: Google Gemini API (`gemini-2.5-flash` / `gemini-1.5-flash`) or Groq (`llama-3.3-70b-versatile`) on eligible free tiers.
+### 3.4 Team Responsibilities
+- **Member 1 (Frontend)**: Designed and implemented the approved "LUCY CSR" React dashboard and UI components.
+- **Member 2 (Backend Exploration)**: Researched and prototyped early Express/MongoDB models; reviewed and consolidated onto Cloudflare D1/SQLite for serverless zero-dependency execution.
+- **Member 3 (AI Agent & Prompting)**: Formulated system instructions, tool calling parameters, and Gemini/Groq provider integration.
+- **Member 4 (QA & Test Suite)**: Developed the 25-case automated Vitest suite, business day tests, and error-path coverage.
+- **Member 5 & Lead Engineer (Integration & Deployment)**: Architected end-to-end integration, deterministic key loader, Cloudflare Workers/Pages deployment runbooks, and submission documentation.
 - **Bounded Loop**: Strictly capped at 5 tool calls and 6 model turns to eliminate runaway execution.
 - **Tool Protocol**:
   1. `read_ticket(ticket_id)`: Fetches complaint and checks for completeness.

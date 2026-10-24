@@ -58,6 +58,29 @@ This register documents all cloud services, hosting platforms, and AI model prov
 
 ---
 
-## 3. Quota Management & Guardrails
+## 3. Development Tools & AI Coding Assistants
+
+| Tool / Assistant | Provider | Role | Plan / License |
+| :--- | :--- | :--- | :--- |
+| **Antigravity IDE** | Google DeepMind | Pair programming agent, code integration, testing & refactoring | Free Hackathon Tier |
+| **VS Code / Cursor** | Microsoft / Anysphere | Local code navigation & terminal management | Free Community / Free Tier |
+| **Git / GitHub** | GitHub, Inc. | Version control, branch management, collaboration | Free Public Repository |
+| **Node.js / tsx / Vitest** | Open Source | TypeScript runtime, testing framework, dev server | Open Source (MIT) |
+
+---
+
+## 4. Owner Verification Placeholders
+
+> [!NOTE]
+> The repository owner must verify the following account-specific details prior to final submission:
+> - **Cloudflare Account ID**: `[OWNER_TO_FILL: e.g. cf_acc_...]`
+> - **Google AI Studio Account Email**: `[OWNER_TO_FILL: e.g. user@gmail.com]`
+> - **Cloudflare D1 Database ID**: `[OWNER_TO_FILL: e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx]`
+> - **Live Pages URL**: `[OWNER_TO_FILL: e.g. https://resolvai-dashboard.pages.dev]`
+
+---
+
+## 5. Quota Management & Guardrails
 1. **Bounded Tool Execution**: System prompt and agent loop strictly enforce at most 5 tool calls and 6 model turns per request.
-2. **Deterministic Fallback**: In the event of network disruption or quota exhaustion, a user-readable error is displayed offering immediate manual retry without losing state.
+2. **Deterministic Error Handling**: In the event of network disruption or quota exhaustion, an honest, structured error (`{"type":"error","message":"..."}`) is displayed offering immediate manual retry without losing state. Never fake AI output.
+3. **Per-IP Rate Limiting**: The backend enforces a 30-requests-per-minute sliding window per IP to safeguard the free model quota.
