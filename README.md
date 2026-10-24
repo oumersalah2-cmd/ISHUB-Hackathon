@@ -82,13 +82,13 @@ npm run seed
 ├── CONTRIBUTING.md           # Branching rules, merge windows & commit guide
 ├── README.md                 # Project guide & quick start
 ├── live_run.ts               # Runner for live Gemini model execution
-├── frontend/                 # Member 1: React 19 + TypeScript + Vite Dashboard
+├── frontend/                 # React 19 + TypeScript + Vite Dashboard
 │   ├── src/
 │   │   ├── components/       # Stepper, Evidence Viewer, Response Editor, Modal
 │   │   ├── App.tsx           # Main Support Officer Dashboard
 │   │   └── services/api.ts   # Typed API client
 │   └── package.json
-├── backend/                  # Member 2 & 3: Cloudflare Workers / Hono REST API
+├── backend/                  # Cloudflare Workers / Hono REST API
 │   ├── .dev.vars.example     # Cloudflare Workers secrets template
 │   ├── .gitignore            # Backend-specific ignore rules
 │   ├── live_run.ts           # Script executing real model against T-001..T-005
@@ -99,9 +99,9 @@ npm run seed
 │   │   ├── services/         # SQLite/D1 database service & AI reasoning core
 │   │   ├── tools/            # Tool A (read_ticket), Tool B (search_policies), Tool C (update_ticket)
 │   │   └── utils/dateUtils.ts # Deterministic UTC date math
-│   ├── tests/                # Member 4: Vitest suites (system, 5-cases, business days)
+│   ├── tests/                # Vitest suites (system, 5-cases, business days)
 │   └── package.json
-└── docs/                     # Member 5: Hackathon Documentation & Reports
+└── docs/                     # Hackathon Documentation & Reports
     ├── ARCHITECTURE.md       # Architectural diagrams & component specs
     ├── DEMO_SCRIPT.md        # 10-minute presentation guide & Q&A defense
     ├── SERVICE_REGISTER.md   # Cloud service register & free-tier limits
@@ -122,6 +122,6 @@ This application strictly operates within 100% free tiers:
 
 ## 6. Known Issues Before First Demo
 
-1. **Demo Data Synchronization**: Local SQLite database is 100% synchronized with `seed-data.json` (`POL-REFUND-01`, `POL-DELIVERY-01`, `POL-ACCOUNT-01` and `T-001`..`T-005`). Member 2 must ensure remote Cloudflare D1 applies `0001_initial_schema.sql` and `seed.sql` via Wrangler before remote deployment.
+1. **Demo Data Synchronization**: Local SQLite database is 100% synchronized with `seed-data.json` (`POL-REFUND-01`, `POL-DELIVERY-01`, `POL-ACCOUNT-01` and `T-001`..`T-005`). One must ensure remote Cloudflare D1 applies `0001_initial_schema.sql` and `seed.sql` via Wrangler before remote deployment.
 2. **Live Gemini API Key**: In local offline evaluation, the reasoning engine uses a grounded deterministic fallback engine. For the live evaluation stage, teammates must provide their free `GEMINI_API_KEY` in `.env` to execute `npm run live-run`.
 3. **Draft Grounding**: Response drafts are strictly grounded in policy text and ticket facts. Ensure future prompt changes do not introduce prohibited terms like OTP or prepaid labels.
