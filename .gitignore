@@ -1,0 +1,52 @@
+# Node dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# Environment variables & secrets (CRITICAL: Never commit secrets)
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+wrangler.env
+
+# Cloudflare & Wrangler local files
+.wrangler/
+.miniflare/
+
+# Local databases
+*.db
+*.db-wal
+*.db-shm
+data/
+backend/data/
+
+# Testing & Coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.sublime-project
+*.sublime-workspace

@@ -1,0 +1,17 @@
+name = "ai-customer-support-agent-backend"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+ALLOWED_ORIGIN = "*"
+AI_PROVIDER = "gemini"
+MODEL_NAME = "gemini-2.5-flash"
+
+# Cloudflare D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "customer-support-db"
+database_id = "your-d1-database-uuid"
+migrations_dir = "migrations"
