@@ -20,9 +20,10 @@ Built for the university hackathon on a 100% genuine free-tier architecture.
 
 ## 2. Judges Quick Start (Live Demonstration)
 
-- **Live Deployed Dashboard**: `[OWNER_TO_FILL: https://resolvai-dashboard.pages.dev]`
-- **Live Deployed API Base**: `[OWNER_TO_FILL: https://ai-customer-support-agent-backend.<subdomain>.workers.dev/api]`
-- **Health Endpoint**: `GET /api/health` returns status, database connectivity, and AI provider/model.
+- **Live Deployed Dashboard**: [https://ishub-hackathon.vercel.app](https://ishub-hackathon.vercel.app)
+- **Live Deployed API Base**: [https://ishub-hackathon-1.onrender.com/api](https://ishub-hackathon-1.onrender.com/api)
+- **Health Endpoint**: [`https://ishub-hackathon-1.onrender.com/api/health`](https://ishub-hackathon-1.onrender.com/api/health)
+- **Official Submission Package**: [docs/SUBMISSION.md](docs/SUBMISSION.md)
 - **Reference Date**: `2026-10-24` (applies to all refund windows, shipping delays, and day counts).
 - **Official Seed Data**: 3 corporate policies (`POL-REFUND-01`, `POL-DELIVERY-01`, `POL-ACCOUNT-01`) and 5 initial tickets (`T-001` .. `T-005`).
 
