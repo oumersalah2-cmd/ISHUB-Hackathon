@@ -1,4 +1,4 @@
-# ResolvAI - AI Customer Support Resolution Agent
+# Lucy CSR - AI Customer Support Resolution Agent
 
 > An internal AI customer support resolution copilot that retrieves policy evidence, detects missing complaint facts, proposes grounded resolutions, and requires explicit human approval before persisting updates.
 
