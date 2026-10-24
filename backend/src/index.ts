@@ -41,16 +41,23 @@ app.use('*', async (c, next) => {
 // Central Error Handler
 app.onError(errorHandler);
 
-// Mount API routes
+// Mount API routes with aliases for frontend compatibility
+app.route('/health', healthRouter);
 app.route('/api/health', healthRouter);
+app.route('/tickets', ticketsRouter);
 app.route('/api/tickets', ticketsRouter);
+app.route('/policies', policiesRouter);
 app.route('/api/policies', policiesRouter);
+app.route('/updates', updatesRouter);
 app.route('/api/updates', updatesRouter);
+app.route('/outbox', updatesRouter);
+app.route('/api/outbox', updatesRouter);
 app.route('/api/agent', agentRouter);
 
 // Root route
 app.get('/', (c) => {
   return c.json({
+    ok: true,
     message: 'AI Customer Support Resolution Agent API is online.',
     docs: '/api/health',
     version: '1.0.0'
