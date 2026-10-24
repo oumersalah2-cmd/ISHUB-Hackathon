@@ -26,7 +26,7 @@ wrangler.env
 *.db
 *.db-wal
 *.db-shm
-data/
+/data/
 backend/data/
 
 # Testing & Coverage

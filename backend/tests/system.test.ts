@@ -10,6 +10,7 @@ import { readTicket } from '../src/tools/readTicket.js';
 import { searchPolicies } from '../src/tools/searchPolicies.js';
 import { updateTicket } from '../src/tools/updateTicket.js';
 import { investigateTicket } from '../src/services/ai.js';
+import { MockModel } from './mockModel.js';
 import app from '../src/index.js';
 
 describe('Mock Tests: AI Customer Support Resolution Agent - 10 Core Test Cases (seed-data.json)', () => {
@@ -52,7 +53,7 @@ describe('Mock Tests: AI Customer Support Resolution Agent - 10 Core Test Cases 
 
   // Test 4: Asking for missing information
   it('4. Asking for missing information (Mock Test): T-002 with null purchase date returns clarification question', async () => {
-    const result = await investigateTicket({ ticket_id: 'T-002' }, db);
+    const result = await MockModel.investigateTicket({ ticket_id: 'T-002' }, db);
     expect(result.type).toBe('clarification');
     if (result.type === 'clarification') {
       expect(result.question.toLowerCase()).toContain('purchase date');
@@ -63,7 +64,8 @@ describe('Mock Tests: AI Customer Support Resolution Agent - 10 Core Test Cases 
   });
 
   // Test 5: Preventing updates before confirmation
-  it('5. Preventing updates before confirmation (Mock Test): updateTicket strictly rejects updates without is_confirmed', async () => {
+  it('5. Preventing updates before confirmation: Tool C and confirm endpoint strictly refuse to save when is_confirmed is false', async () => {
+    // 5a: Direct Tool C call
     const unconfirmedInput: any = {
       ticket_id: 'T-001',
       approved_category: 'Refund',
@@ -77,9 +79,31 @@ describe('Mock Tests: AI Customer Support Resolution Agent - 10 Core Test Cases 
     expect(result.success).toBe(false);
     expect(result.error).toContain('Explicit human approval');
 
+    // 5b: Confirm HTTP endpoint refuses to save when is_confirmed is false
+    const response = await app.request('/api/tickets/T-001/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        approved_category: 'Refund',
+        proposed_status: 'Pending Customer',
+        response_draft: 'We will process your refund shortly.',
+        supporting_policy_ids: ['POL-REFUND-01'],
+        is_confirmed: false
+      })
+    });
+
+    expect(response.status).toBe(400);
+    const body: any = await response.json();
+    expect(body.success).toBe(false);
+    expect(body.error).toContain('is_confirmed must be true');
+
     // Verify ticket in database remains unchanged
     const ticketInDb = await db.queryFirst<any>('SELECT status FROM tickets WHERE id = ?', ['T-001']);
     expect(ticketInDb.status).toBe('Open');
+
+    // Verify no updates saved
+    const updates = await db.queryAll('SELECT * FROM ticket_updates WHERE ticket_id = ?', ['T-001']);
+    expect(updates).toHaveLength(0);
   });
 
   // Test 6: Saving a confirmed update
@@ -135,17 +159,35 @@ describe('Mock Tests: AI Customer Support Resolution Agent - 10 Core Test Cases 
     expect(body.update.response_draft).toContain('Dear Dawit');
   });
 
-  // Test 8: Handling a model API failure
-  it('8. Handling a model API failure (Mock Test): Simulated failure returns clear error without data mutation', async () => {
-    const result = await investigateTicket({ ticket_id: 'T-001', force_failure: true }, db);
-    expect(result.type).toBe('error');
-    if (result.type === 'error') {
-      expect(result.message).toContain('SIMULATED_FAILURE');
-    }
+  // Test 8: Handling a model API failure & error path
+  it('8. Handling a model API failure: Missing key and forced failure return error result, no fake proposal, and nothing saved', async () => {
+    // 8a: Forced failure
+    const forcedResult = await investigateTicket({ ticket_id: 'T-001', force_failure: true }, db);
+    expect(forcedResult.type).toBe('error');
+    expect(forcedResult.message.toLowerCase()).toContain('retry');
+    expect(forcedResult.ticket_id).toBe('T-001');
+    expect((forcedResult as any).response_draft).toBeUndefined();
+    expect((forcedResult as any).category).toBeUndefined();
+
+    // 8b: Missing key
+    const missingKeyResult = await investigateTicket(
+      { ticket_id: 'T-001' },
+      db,
+      { GEMINI_API_KEY: '' }
+    );
+    expect(missingKeyResult.type).toBe('error');
+    expect(missingKeyResult.message.toLowerCase()).toContain('retry');
+    expect(missingKeyResult.ticket_id).toBe('T-001');
+    expect((missingKeyResult as any).response_draft).toBeUndefined();
+    expect((missingKeyResult as any).category).toBeUndefined();
 
     // Verify no updates were saved in database
     const updates = await db.queryAll('SELECT * FROM ticket_updates WHERE ticket_id = ?', ['T-001']);
     expect(updates).toHaveLength(0);
+
+    // Verify ticket status remained unchanged
+    const ticketInDb = await db.queryFirst<any>('SELECT status FROM tickets WHERE id = ?', ['T-001']);
+    expect(ticketInDb.status).toBe('Open');
   });
 
   // Test 9: Handling a database failure / error path

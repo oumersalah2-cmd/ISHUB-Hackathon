@@ -49,6 +49,14 @@ ticketsRouter.post('/:id/confirm', async (c) => {
   try {
     const body = await c.req.json();
     
+    // Refuse to save if is_confirmed is false
+    if (body.is_confirmed === false) {
+      return c.json({
+        success: false,
+        error: 'Explicit human approval is required (is_confirmed must be true).'
+      }, 400);
+    }
+
     // Ensure ticket_id matches URL param and explicit confirmation is passed
     const input = {
       ticket_id: ticketId,
@@ -56,7 +64,7 @@ ticketsRouter.post('/:id/confirm', async (c) => {
       status: body.proposed_status || body.status,
       response_draft: body.response_draft,
       policy_ids: body.supporting_policy_ids || body.policy_ids || [],
-      is_confirmed: true // explicitly confirmed via this dedicated endpoint
+      is_confirmed: body.is_confirmed === true || body.is_confirmed === undefined
     };
 
     const result = await updateTicket(input as any, db);
