@@ -126,14 +126,8 @@ npm run live-run
 │   ├── tests/                # 25 Vitest tests (system, 5-cases, business days)
 │   └── package.json
 └── docs/                     # Submission Documentation
-    ├── ARCHITECTURE.md       # Architectural diagrams & component specs
-    ├── DEPLOYMENT.md         # Exact copy-paste Cloudflare deployment runbook
-    ├── DEMO_SCRIPT.md        # 10-minute presentation guide & 2-min judge Q&A defense
-    ├── SERVICE_REGISTER.md   # Cloud service register & free-tier limits
-    ├── TEAM_ROLES.md         # 5 student responsibilities & deliverables
-    ├── CONTRIBUTION_NOTES.md # Individual contribution notes with placeholders
-    ├── KNOWN_LIMITATIONS.md  # Honest technical constraints record
-    └── TEST_REPORT.md        # Complete 25-test validation matrix
+    ├── Documentation.md       # System Design, Team Responsibilities & Git Branch Mapping, Known Limitations, Demo Script.
+
 ```
 
 ---
