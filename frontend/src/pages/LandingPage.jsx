@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import logoImg from '../assets/logo.png';
 import Button from '../components/common/Button';
+import ResolutionPipeline from '../components/common/ResolutionPipeline';
 import { useApiConfig } from '../context/ApiConfigContext';
 
 const TRUSTED_COMPANIES = [
@@ -431,83 +432,10 @@ const LandingPage = () => {
       </section>
 
       {/* --------------------------------------------------------------------
-          5. How It Works Section (Simple, Attractive, No API Code)
+          5. Resolution Pipeline (How Lucy Resolves Tickets)
           -------------------------------------------------------------------- */}
-      <section id="how-it-works" className="landing-section" style={{ backgroundColor: '#FFFFFF', maxWidth: '100%' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div className="landing-section-header">
-            <div className="landing-section-tag">
-              <Layers size={12} color="var(--orange-500)" />
-              <span>Simple 4-Step Process</span>
-            </div>
-            <h2 className="landing-section-title">How Lucy Resolves Tickets</h2>
-            <p className="landing-section-desc">
-              From customer request to approved solution in four simple steps.
-            </p>
-          </div>
-
-          <div className="how-it-works-steps">
-            {/* Step 1 */}
-            <div className="step-landing-card">
-              <div className="step-card-header">
-                <div className="step-landing-number">1</div>
-                <span className="step-friendly-badge">Step 1 • Receive</span>
-              </div>
-              <div className="step-icon-wrap">
-                <Inbox size={22} color="var(--orange-500)" />
-              </div>
-              <h3 className="step-landing-title">Receive the Ticket</h3>
-              <p className="step-landing-desc">
-                Customer questions land right inside your inbox. You can sort by urgent priority and open any ticket with one click.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="step-landing-card highlight">
-              <div className="step-card-header">
-                <div className="step-landing-number">2</div>
-                <span className="step-friendly-badge active">Step 2 • AI Check</span>
-              </div>
-              <div className="step-icon-wrap">
-                <Bot size={22} color="var(--orange-500)" />
-              </div>
-              <h3 className="step-landing-title">AI Checks Company Rules</h3>
-              <p className="step-landing-desc">
-                Lucy instantly reads your real company policies and warranty rules. It writes a complete, accurate answer for you to review.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="step-landing-card">
-              <div className="step-card-header">
-                <div className="step-landing-number">3</div>
-                <span className="step-friendly-badge">Step 3 • Review & Edit</span>
-              </div>
-              <div className="step-icon-wrap">
-                <FileCheck size={22} color="var(--orange-500)" />
-              </div>
-              <h3 className="step-landing-title">Review & Edit Details</h3>
-              <p className="step-landing-desc">
-                If a receipt or order number is missing, Lucy prompts you to add it. You can edit the text so it sounds friendly and helpful.
-              </p>
-            </div>
-
-            {/* Step 4 */}
-            <div className="step-landing-card highlight">
-              <div className="step-card-header">
-                <div className="step-landing-number">4</div>
-                <span className="step-friendly-badge active">Step 4 • Safe Send</span>
-              </div>
-              <div className="step-icon-wrap">
-                <Send size={22} color="var(--orange-500)" />
-              </div>
-              <h3 className="step-landing-title">Approve & Save</h3>
-              <p className="step-landing-desc">
-                You make the final decision with one click. Every approved answer is safely recorded in your Outbox archive forever.
-              </p>
-            </div>
-          </div>
-        </div>
+      <section id="how-it-works" className="landing-section" style={{ backgroundColor: '#FFFFFF', maxWidth: '100%', padding: '1rem 0' }}>
+        <ResolutionPipeline />
       </section>
 
       {/* --------------------------------------------------------------------

@@ -16,12 +16,11 @@ import {
 import Button from '../components/common/Button';
 import { Card, CardHeader, CardTitle, CardBody } from '../components/common/Card';
 import { StatusBadge, PriorityBadge } from '../components/tickets/StatusBadge';
+import ResolutionPipeline from '../components/common/ResolutionPipeline';
 import api from '../services/api';
-import { useApiConfig } from '../context/ApiConfigContext';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
-  const { status, baseUrl, setIsConfigModalOpen } = useApiConfig();
 
   const [metrics, setMetrics] = useState({
     totalTickets: 0,
@@ -158,9 +157,8 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Split Section: Recent Queue & System Grounding */}
-      <div className="home-split-grid">
-        {/* Left: Recent Tickets Queue */}
+      {/* Active Queue Preview */}
+      <div style={{ marginBottom: '2.5rem' }}>
         <Card>
           <CardHeader>
             <CardTitle icon={<Inbox size={18} color="var(--clay-500)" />}>
@@ -227,49 +225,11 @@ const DashboardPage = () => {
             )}
           </CardBody>
         </Card>
+      </div>
 
-        {/* Right: API & Agent Engine Status */}
-        <Card variant="butter">
-          <CardHeader>
-            <CardTitle icon={<Server size={18} color="var(--clay-500)" />}>
-              Agent Engine & API
-            </CardTitle>
-          </CardHeader>
-          <CardBody>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div>
-                <span className="meta-label">Backend Connection</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                  <span className={`api-status-dot ${status}`} />
-                  <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-primary)' }}>
-                    {status === 'online' ? 'API Online & Reachable' : status === 'offline' ? 'API Offline / Unreachable' : 'Verifying...'}
-                  </span>
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                  Target: <code>{baseUrl}</code>
-                </div>
-              </div>
-
-              <div>
-                <span className="meta-label">Resolution Protocol</span>
-                <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: '0.25rem' }}>
-                  All agent proposals require explicit human confirmation. Response drafts can be edited and verified against corporate policies before submission.
-                </p>
-              </div>
-
-              <div style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--butter-border)' }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  style={{ width: '100%' }}
-                  onClick={() => setIsConfigModalOpen(true)}
-                >
-                  Configure API & Diagnostics
-                </Button>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
+      {/* 4-Step Connected Resolution Pipeline (Matches Image 2 Specification) */}
+      <div style={{ background: '#FFFFFF', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-light)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)' }}>
+        <ResolutionPipeline style={{ padding: '2.5rem 1.5rem 3rem' }} />
       </div>
     </div>
   );

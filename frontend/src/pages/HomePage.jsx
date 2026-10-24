@@ -230,9 +230,8 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Split Section: Recent Queue & System Grounding */}
-        <div className="home-split-grid">
-          {/* Left: Recent Tickets Queue */}
+        {/* Active Queue Preview */}
+        <div>
           <Card>
             <CardHeader>
               <CardTitle icon={<Inbox size={18} color="var(--clay-500)" />}>
@@ -297,49 +296,6 @@ const HomePage = () => {
                   })}
                 </div>
               )}
-            </CardBody>
-          </Card>
-
-          {/* Right: API & Agent Engine Status */}
-          <Card variant="butter">
-            <CardHeader>
-              <CardTitle icon={<Server size={18} color="var(--clay-500)" />}>
-                Agent Engine & API
-              </CardTitle>
-            </CardHeader>
-            <CardBody>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div>
-                  <span className="meta-label">Backend Connection</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                    <span className={`api-status-dot ${status}`} />
-                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-primary)' }}>
-                      {status === 'online' ? 'API Online & Connected' : status === 'offline' ? 'API Offline / Unreachable' : 'Verifying...'}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                    Target: <code>{baseUrl}</code>
-                  </div>
-                </div>
-
-                <div>
-                  <span className="meta-label">Resolution Protocol</span>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: '0.25rem' }}>
-                    All AI agent proposals require explicit human confirmation. Response drafts can be modified and audited prior to persistence.
-                  </p>
-                </div>
-
-                <div style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--butter-border)' }}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    style={{ width: '100%' }}
-                    onClick={() => setIsConfigModalOpen(true)}
-                  >
-                    Configure API & Diagnostics
-                  </Button>
-                </div>
-              </div>
             </CardBody>
           </Card>
         </div>
