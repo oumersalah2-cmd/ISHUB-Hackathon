@@ -10,7 +10,7 @@ export const getApiBaseUrl = () => {
   if (customUrl && customUrl.trim() !== '') {
     return customUrl.trim().replace(/\/+$/, '');
   }
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
   if (envUrl && envUrl.trim() !== '') {
     return envUrl.trim().replace(/\/+$/, '');
   }

@@ -12,7 +12,7 @@ import Button from '../components/common/Button';
 const InboxPage = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const { status: apiStatus, baseUrl } = useApiConfig();
+  const { status: apiStatus, baseUrl, setIsConfigModalOpen } = useApiConfig();
 
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ const InboxPage = () => {
     } catch (err) {
       console.error('Error fetching tickets from API:', err);
       const msg = err.isNetworkError
-        ? `Could not connect to API server at ${baseUrl}. Please ensure your backend is running.`
+        ? `Could not reach backend at ${baseUrl}. Click "Configure Backend URL" to connect to your live API.`
         : err.message || 'Failed to retrieve tickets from the backend.';
       setError(msg);
       toast.error(msg, 'Ticket Fetch Error');
@@ -133,17 +133,23 @@ const InboxPage = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '1rem',
+            flexWrap: 'wrap',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: '240px' }}>
             <AlertCircle size={20} color="#991B1B" />
             <span style={{ fontSize: '0.875rem', color: '#991B1B', fontWeight: 600 }}>
               {error}
             </span>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchTickets}>
-            Retry Request
-          </Button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Button variant="secondary" size="sm" onClick={() => setIsConfigModalOpen(true)}>
+              Configure Backend URL
+            </Button>
+            <Button variant="outline" size="sm" onClick={fetchTickets}>
+              Retry
+            </Button>
+          </div>
         </div>
       )}
 

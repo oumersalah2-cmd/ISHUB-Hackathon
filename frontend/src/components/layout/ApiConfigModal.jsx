@@ -36,7 +36,7 @@ const ApiConfigModal = () => {
 
   const handleReset = () => {
     resetToDefault();
-    setInputUrl(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api');
+    setInputUrl(import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8787/api');
     toast.info('Reset API URL to default environment setting.');
   };
 
